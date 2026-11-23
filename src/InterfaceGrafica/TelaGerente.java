@@ -27,8 +27,12 @@ public class TelaGerente extends JFrame {
         JPanel painel = new JPanel(new BorderLayout(10, 10)); painel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         painel.add(new JLabel("Administracao da locadora", JLabel.CENTER), BorderLayout.NORTH);
         JPanel menu = new JPanel(new GridLayout(1, 4, 8, 8)); JButton clientes = new JButton("Clientes");
-        JButton veiculos = new JButton("Veiculos"); JButton cadastrar = new JButton("Cadastrar veiculo"); JButton sair = new JButton("Sair");
-        clientes.addActionListener(event -> mostrarClientes()); veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
+        JButton veiculos = new JButton("Veiculos");
+        JButton cadastrar = new JButton("Cadastrar veiculo");
+        JButton sair = new JButton("Sair");
+
+        clientes.addActionListener(event -> mostrarClientes());
+        veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
         cadastrar.addActionListener(event -> cadastrarVeiculo()); sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
         menu.add(clientes); menu.add(veiculos); menu.add(cadastrar); menu.add(sair); painel.add(menu, BorderLayout.SOUTH); setContentPane(painel);
     }
