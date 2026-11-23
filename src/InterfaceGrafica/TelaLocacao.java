@@ -44,6 +44,17 @@ public class TelaLocacao extends JFrame {
         setContentPane(painel);
     }
 
+    private pagamento.FormaPagamento criarFormaPagamentoSelecionada() {
+        String formaSelecionada = (String) pagamento.getSelectedItem();
+        if ("pix".equals(formaSelecionada)) {
+            return new pagamento.PagamentoPix();
+        }
+        if ("cartao".equals(formaSelecionada)) {
+            return new pagamento.PagamentoCartao();
+        }
+        return new pagamento.PagamentoDinheiro();
+    }
+
     private void confirmar() {
         try {
             String placaInformada = placa.getText().trim();
@@ -66,15 +77,8 @@ public class TelaLocacao extends JFrame {
             locacao.setDiasAlugados(Math.toIntExact(dias));
             locacao.setValorTotal(veiculo.calcularValorLocacao(Math.toIntExact(dias)));
 
-            String formaSelecionada = (String) pagamento.getSelectedItem();
-            pagamento.FormaPagamento formaPagamento;
-            if ("pix".equals(formaSelecionada)) {
-                formaPagamento = new pagamento.PagamentoPix();
-            } else if ("cartao".equals(formaSelecionada)) {
-                formaPagamento = new pagamento.PagamentoCartao();
-            } else {
-                formaPagamento = new pagamento.PagamentoDinheiro();
-            }
+
+            pagamento.FormaPagamento formaPagamento = criarFormaPagamentoSelecionada();
 
             model.Locacao locacaoRealizada = controller.realizarLocacao(cliente, veiculo, locacao, formaPagamento);
 
