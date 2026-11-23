@@ -1,38 +1,49 @@
 package InterfaceGrafica;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import controller.SistemaController;
+
+import java.awt.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 public class TelaLocacao extends JFrame {
+    private final SistemaController controller = new SistemaController();
     private final model.Cliente cliente;
     private final JTextField placa = new JTextField();
     private final JTextField dataInicio = new JTextField();
     private final JTextField dataFim = new JTextField();
     private final JComboBox<String> pagamento = new JComboBox<>(new String[]{"dinheiro", "cartao", "pix"});
+
     public TelaLocacao(JFrame anterior, model.Cliente cliente) {
         this.cliente = cliente;
-        setTitle("Nova locacao"); setSize(470, 300); setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(anterior); construirTela();
+        setTitle("Nova locacao");
+        setSize(470, 300);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(anterior);
+        construirTela();
     }
+
     private void construirTela() {
         JPanel painel = new JPanel(new BorderLayout(10, 10));
         painel.setBorder(BorderFactory.createEmptyBorder(18, 24, 18, 24));
         JPanel campos = new JPanel(new GridLayout(4, 2, 8, 8));
-        campos.add(new JLabel("Placa:")); campos.add(placa); campos.add(new JLabel("Data inicio (AAAA-MM-DD):")); campos.add(dataInicio);
-        campos.add(new JLabel("Data fim (AAAA-MM-DD):")); campos.add(dataFim); campos.add(new JLabel("Forma de pagamento:")); campos.add(pagamento);
-        painel.add(campos, BorderLayout.CENTER); JButton confirmar = new JButton("Confirmar locacao");
-        confirmar.addActionListener(event -> confirmar()); painel.add(confirmar, BorderLayout.SOUTH); setContentPane(painel);
+        campos.add(new JLabel("Placa:"));
+        campos.add(placa);
+        campos.add(new JLabel("Data inicio (AAAA-MM-DD):"));
+        campos.add(dataInicio);
+        campos.add(new JLabel("Data fim (AAAA-MM-DD):"));
+        campos.add(dataFim);
+        campos.add(new JLabel("Forma de pagamento:"));
+        campos.add(pagamento);
+
+        painel.add(campos, BorderLayout.CENTER);
+        JButton confirmar = new JButton("Confirmar locacao");
+        confirmar.addActionListener(event -> confirmar());
+        painel.add(confirmar, BorderLayout.SOUTH);
+        setContentPane(painel);
     }
+
     private void confirmar() {
         try {
             String placaInformada = placa.getText().trim();
@@ -45,8 +56,7 @@ public class TelaLocacao extends JFrame {
                 return;
             }
 
-            model.Locadora locadora = new model.Locadora();
-            model.Veiculo veiculo = locadora.buscarVeiculo(placaInformada);
+            model.Veiculo veiculo = controller.buscarVeiculo(placaInformada);
 
             model.Locacao locacao = new model.Locacao();
             locacao.setClienteId(cliente.getId());
@@ -66,7 +76,7 @@ public class TelaLocacao extends JFrame {
                 formaPagamento = new pagamento.PagamentoDinheiro();
             }
 
-            model.Locacao locacaoRealizada = locadora.realizarLocacao(cliente, veiculo, locacao, formaPagamento);
+            model.Locacao locacaoRealizada = controller.realizarLocacao(cliente, veiculo, locacao, formaPagamento);
 
             JOptionPane.showMessageDialog(
                     this,

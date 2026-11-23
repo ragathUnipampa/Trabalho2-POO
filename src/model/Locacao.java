@@ -1,9 +1,11 @@
 package model;
 
 import com.google.gson.annotations.SerializedName;
-import java.math.BigDecimal;
 
-public class  Locacao {
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class Locacao {
 
     private Long id;
 
@@ -14,10 +16,10 @@ public class  Locacao {
     private Long clienteId;
 
     @SerializedName("data_inicio")
-    private String dataInicio;
+    private LocalDate dataInicio;
 
     @SerializedName("data_fim")
-    private String dataFim;
+    private LocalDate dataFim;
 
     @SerializedName("dias_alugados")
     private Integer diasAlugados;
@@ -58,20 +60,28 @@ public class  Locacao {
         this.clienteId = clienteId;
     }
 
-    public String getDataInicio() {
+    public LocalDate getDataInicio() {
         return dataInicio;
     }
 
-    public void setDataInicio(String dataInicio) {
+    public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
     }
 
-    public String getDataFim() {
+    public void setDataInicio(String dataInicio) {
+        this.dataInicio = dataInicio == null || dataInicio.isBlank() ? null : LocalDate.parse(dataInicio);
+    }
+
+    public LocalDate getDataFim() {
         return dataFim;
     }
 
-    public void setDataFim(String dataFim) {
+    public void setDataFim(LocalDate dataFim) {
         this.dataFim = dataFim;
+    }
+
+    public void setDataFim(String dataFim) {
+        this.dataFim = dataFim == null || dataFim.isBlank() ? null : LocalDate.parse(dataFim);
     }
 
     public Integer getDiasAlugados() {

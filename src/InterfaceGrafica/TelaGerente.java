@@ -1,5 +1,8 @@
 package InterfaceGrafica;
 
+import controller.SistemaController;
+import exception.LocacaoException;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
@@ -14,8 +17,10 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaGerente extends JFrame {
+    private final SistemaController controller = new SistemaController();
+
     public TelaGerente(model.Gerente gerente) {
-        setTitle("Painel do gerente - " + gerente.getEmail()); setSize(720, 430); setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Painel do gerente - " + gerente.getEmail()); setSize(720, 430); setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null); construirTela();
     }
     private void construirTela() {
@@ -30,7 +35,7 @@ public class TelaGerente extends JFrame {
     private void mostrarClientes() {
         DefaultTableModel modelo = new DefaultTableModel(new Object[]{"Nome", "CNH", "Categoria", "Telefone"}, 0);
         try {
-            for (model.Cliente cliente : AppServices.buscarClientes()) {
+            for (model.Cliente cliente : controller.buscarClientes()) {
                 modelo.addRow(new Object[]{cliente.getNome(), cliente.getCnh(), cliente.getCategoriaCnh(), cliente.getTelefone()});
             }
         } catch (RuntimeException erro) {
@@ -49,16 +54,20 @@ public class TelaGerente extends JFrame {
                 != javax.swing.JOptionPane.OK_OPTION) return;
         try {
             if (placa.getText().trim().isEmpty() || marca.getText().trim().isEmpty()) throw new IllegalArgumentException();
-                model.Veiculo veiculo = new model.Veiculo();
-                veiculo.setPlaca(placa.getText().trim());
-                veiculo.setTipoVeiculo((String) tipo.getSelectedItem());
-                veiculo.setMarca(marca.getText().trim());
-                veiculo.setModelo(modelo.getText().trim());
-                veiculo.setAno(Integer.valueOf(ano.getText().trim()));
-                veiculo.setStatusVeiculo("disponivel");
-                veiculo.setValorDiario(new java.math.BigDecimal(valor.getText().trim()));
-                AppServices.cadastrarVeiculo(veiculo);
+            model.Veiculo veiculo = new model.Veiculo();
+            veiculo.setPlaca(placa.getText().trim());
+            veiculo.setTipoVeiculo((String) tipo.getSelectedItem());
+            veiculo.setMarca(marca.getText().trim());
+            veiculo.setModelo(modelo.getText().trim());
+            veiculo.setAno(Integer.valueOf(ano.getText().trim()));
+            veiculo.setStatusVeiculo("disponivel");
+            veiculo.setValorDiario(new java.math.BigDecimal(valor.getText().trim()));
+            controller.cadastrarVeiculo(veiculo);
             javax.swing.JOptionPane.showMessageDialog(this, "Veiculo cadastrado com sucesso.");
-        } catch (RuntimeException erro) { UiSupport.aviso(this, "Preencha os dados do veiculo corretamente."); }
+        } catch (LocacaoException erro) {
+            UiSupport.aviso(this, erro.getMessage());
+        } catch (RuntimeException erro) {
+            UiSupport.aviso(this, "Preencha os dados do veiculo corretamente.");
+        }
     }
 }
