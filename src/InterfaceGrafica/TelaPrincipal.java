@@ -18,6 +18,10 @@ public class TelaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setContentPane(criarPainel());
+        configurarSelecaoDePerfil();
+    }
+
+    private void configurarSelecaoDePerfil() {
         comboPerfil.addActionListener(event -> atualizarLabelUsuario());
         atualizarLabelUsuario();
     }
@@ -47,10 +51,14 @@ public class TelaPrincipal extends JFrame {
         labelUsuario.setText("Gerente".equals(comboPerfil.getSelectedItem()) ? "E-mail:" : "CNH:");
     }
 
+    private boolean camposDeAcessoEstaoVazios(String usuario, String senha) {
+        return usuario.isEmpty() || senha.isEmpty();
+    }
+
     private void entrar() {
         String usuario = campoUsuario.getText().trim();
         String senha = new String(campoSenha.getPassword());
-        if (usuario.isEmpty() || senha.isEmpty()) {
+        if (camposDeAcessoEstaoVazios(usuario, senha)) {
             UiSupport.aviso(this, "Informe o usuario e a senha.");
             campoUsuario.requestFocusInWindow();
             return;
