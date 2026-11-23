@@ -1,6 +1,9 @@
 package model;
 
 import com.google.gson.annotations.SerializedName;
+import enums.StatusVeiculo;
+import enums.TipoVeiculo;
+
 import java.math.BigDecimal;
 
 public class Veiculo {
@@ -77,7 +80,15 @@ public class Veiculo {
     }
 
     public void setTipoVeiculo(String tipoVeiculo) {
-        this.tipoVeiculo = tipoVeiculo;
+        this.tipoVeiculo = tipoVeiculo != null ? TipoVeiculo.fromValue(tipoVeiculo).getValor() : null;
+    }
+
+    public void setTipoVeiculo(TipoVeiculo tipoVeiculo) {
+        this.tipoVeiculo = tipoVeiculo == null ? null : tipoVeiculo.getValor();
+    }
+
+    public TipoVeiculo getTipoVeiculoEnum() {
+        return tipoVeiculo == null ? null : TipoVeiculo.fromValue(tipoVeiculo);
     }
 
     public String getStatusVeiculo() {
@@ -85,7 +96,15 @@ public class Veiculo {
     }
 
     public void setStatusVeiculo(String statusVeiculo) {
-        this.statusVeiculo = statusVeiculo;
+        this.statusVeiculo = statusVeiculo != null ? StatusVeiculo.fromValue(statusVeiculo).getValor() : null;
+    }
+
+    public void setStatusVeiculo(StatusVeiculo statusVeiculo) {
+        this.statusVeiculo = statusVeiculo == null ? null : statusVeiculo.getValor();
+    }
+
+    public StatusVeiculo getStatusVeiculoEnum() {
+        return statusVeiculo == null ? null : StatusVeiculo.fromValue(statusVeiculo);
     }
 
     public BigDecimal getValorDiario() {

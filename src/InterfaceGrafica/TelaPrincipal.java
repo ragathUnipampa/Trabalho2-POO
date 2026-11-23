@@ -1,21 +1,16 @@
 package InterfaceGrafica;
 
-import java.awt.BorderLayout;
+import controller.SistemaController;
+
 import java.awt.GridLayout;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 public class TelaPrincipal extends JFrame {
+    private final SistemaController controller = new SistemaController();
     private final JTextField campoUsuario = new JTextField(20);
     private final JPasswordField campoSenha = new JPasswordField(20);
     private final JComboBox<String> comboPerfil = new JComboBox<>(new String[]{"Cliente", "Gerente"});
+    private final JLabel labelUsuario = new JLabel("CNH:");
 
     public TelaPrincipal() {
         setTitle("Sistema de Locacao de Veiculos");
@@ -23,6 +18,8 @@ public class TelaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setContentPane(criarPainel());
+        comboPerfil.addActionListener(event -> atualizarLabelUsuario());
+        atualizarLabelUsuario();
     }
 
     private JPanel criarPainel() {
@@ -30,7 +27,7 @@ public class TelaPrincipal extends JFrame {
         painel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
         painel.add(new JLabel("Acesso ao sistema"));
         painel.add(new JPanel());
-        painel.add(new JLabel("CNH:"));
+        painel.add(labelUsuario);
         painel.add(campoUsuario);
         painel.add(new JLabel("Senha:"));
         painel.add(campoSenha);
@@ -46,6 +43,10 @@ public class TelaPrincipal extends JFrame {
         return painel;
     }
 
+    private void atualizarLabelUsuario() {
+        labelUsuario.setText("Gerente".equals(comboPerfil.getSelectedItem()) ? "E-mail:" : "CNH:");
+    }
+
     private void entrar() {
         String usuario = campoUsuario.getText().trim();
         String senha = new String(campoSenha.getPassword());
@@ -56,75 +57,40 @@ public class TelaPrincipal extends JFrame {
         }
         try {
             if ("Gerente".equals(comboPerfil.getSelectedItem())) {
-                model.Gerente gerente = AppServices.autenticarGerente(usuario, senha);
+                model.Gerente gerente = controller.autenticarGerente(usuario, senha);
                 if (gerente == null) {
                     UiSupport.aviso(this, "Email ou senha invalidos.");
                     return;
                 }
                 abrir(new TelaGerente(gerente));
             } else {
-                model.Cliente cliente = AppServices.autenticarCliente(usuario, senha);
+                model.Cliente cliente = controller.autenticarCliente(usuario, senha);
                 if (cliente == null) {
                     UiSupport.aviso(this, "CNH ou senha invalidas.");
                     return;
                 }
                 abrir(new TelaCliente(cliente));
             }
+        } catch (exception.LocacaoException erro) {
+            UiSupport.aviso(this, erro.getMessage());
         } catch (RuntimeException erro) {
             UiSupport.erro(this, "Nao foi possivel acessar o banco de dados.", erro);
         }
     }
 
-    private void abrir(JFrame tela) { tela.setVisible(true); dispose(); }
+    private void abrir(JFrame tela) {
+        tela.setVisible(true);
+        dispose();
+    }
 }
 
 class UiSupport {
     static void aviso(JFrame parent, String mensagem) {
         JOptionPane.showMessageDialog(parent, mensagem, "Atencao", JOptionPane.WARNING_MESSAGE);
     }
+
     static void erro(JFrame parent, String mensagem, RuntimeException erro) {
         String detalhe = erro.getMessage() == null ? "Erro desconhecido." : erro.getMessage();
         JOptionPane.showMessageDialog(parent, mensagem + "\n" + detalhe, "Erro", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-final class AppServices {
-    private static final repository.ClienteRepository CLIENTES = new repository.ClienteRepository();
-    private static final repository.GerenteRepository GERENTES = new repository.GerenteRepository();
-    private static final repository.VeiculoRepository VEICULOS = new repository.VeiculoRepository();
-    private static final repository.LocacaoRepository LOCACOES = new repository.LocacaoRepository();
-
-    private AppServices() { }
-
-    static model.Cliente autenticarCliente(String cnh, String senha) {
-        return CLIENTES.autenticarCliente(cnh, senha);
-    }
-
-    static model.Gerente autenticarGerente(String email, String senha) {
-        return GERENTES.autenticarGerente(email, senha);
-    }
-
-    static model.Cliente cadastrarCliente(model.Cliente cliente) {
-        return CLIENTES.cadastrarCliente(cliente);
-    }
-
-    static java.util.List<model.Cliente> buscarClientes() {
-        return CLIENTES.buscarClientes(null, null, null, null, null);
-    }
-
-    static java.util.List<model.Veiculo> buscarVeiculos(String tipo, String status) {
-        return VEICULOS.buscarVeiculos(tipo, status, null, null, null);
-    }
-
-    static model.Veiculo cadastrarVeiculo(model.Veiculo veiculo) {
-        return VEICULOS.cadastrarVeiculo(veiculo);
-    }
-
-    static model.Veiculo editarVeiculo(long id, java.util.Map<String, Object> dadosAtualizados) {
-        return VEICULOS.editarVeiculo(id, dadosAtualizados);
-    }
-
-    static model.Locacao cadastrarLocacao(model.Locacao locacao) {
-        return LOCACOES.cadastrarLocacao(locacao);
     }
 }

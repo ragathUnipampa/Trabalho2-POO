@@ -1,5 +1,8 @@
 package InterfaceGrafica;
 
+import controller.SistemaController;
+import exception.LocacaoException;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.math.BigDecimal;
@@ -18,6 +21,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaVeiculos extends JFrame {
+    private final SistemaController controller = new SistemaController();
     private final DefaultTableModel modelo = new DefaultTableModel(
             new Object[]{"Placa", "Tipo", "Marca", "Modelo", "Status", "Valor diario"}, 0);
     private final JTable tabela = new JTable(modelo);
@@ -55,7 +59,7 @@ public class TelaVeiculos extends JFrame {
         String tipo = "todos".equals(filtro.getSelectedItem()) ? null : (String) filtro.getSelectedItem();
 
         try {
-            veiculosAtuais = AppServices.buscarVeiculos(tipo, null);
+            veiculosAtuais = controller.buscarVeiculos(tipo, null);
             for (model.Veiculo veiculo : veiculosAtuais) {
                 modelo.addRow(new Object[]{
                         veiculo.getPlaca(),
@@ -66,6 +70,8 @@ public class TelaVeiculos extends JFrame {
                         veiculo.getValorDiario()
                 });
             }
+        } catch (LocacaoException erro) {
+            UiSupport.aviso(this, erro.getMessage());
         } catch (RuntimeException erro) {
             UiSupport.erro(this, "Nao foi possivel consultar os veiculos.", erro);
         }
@@ -111,7 +117,7 @@ public class TelaVeiculos extends JFrame {
             }
 
             for (int linha = 0; linha < veiculosAtuais.size(); linha++) {
-                AppServices.editarVeiculo(
+                controller.editarVeiculo(
                         veiculosAtuais.get(linha).getId(),
                         alteracoesPorLinha.get(linha)
                 );
@@ -120,6 +126,8 @@ public class TelaVeiculos extends JFrame {
             atualizarTabela();
             JOptionPane.showMessageDialog(this, "Alteracoes salvas com sucesso.");
         } catch (IllegalArgumentException erro) {
+            UiSupport.aviso(this, erro.getMessage());
+        } catch (LocacaoException erro) {
             UiSupport.aviso(this, erro.getMessage());
         } catch (RuntimeException erro) {
             UiSupport.erro(this, "Nao foi possivel salvar as alteracoes.", erro);
