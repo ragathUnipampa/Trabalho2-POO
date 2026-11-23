@@ -53,7 +53,12 @@ public class TelaCadastroCliente extends JFrame {
         setContentPane(painel);
     }
 
-    private model.Cliente criarClienteDoFormulario() {
+    private void salvar() {
+        if (nome.getText().trim().isEmpty() || cnh.getText().trim().isEmpty() || senha.getPassword().length == 0) {
+            UiSupport.aviso(this, "Nome, CNH e senha sao obrigatorios.");
+            return;
+        }
+
         model.Cliente cliente = new model.Cliente();
         cliente.setNome(nome.getText().trim());
         cliente.setTelefone(telefone.getText().trim());
@@ -61,15 +66,6 @@ public class TelaCadastroCliente extends JFrame {
         cliente.setCategoriaCnh(CategoriaCNH.valueOf((String) categoria.getSelectedItem()));
         cliente.setCep(cep.getText().trim());
         cliente.setSenhaCliente(new String(senha.getPassword()));
-        return cliente;
-
-    private void salvar() {
-        if (nome.getText().trim().isEmpty() || cnh.getText().trim().isEmpty() || senha.getPassword().length == 0) {
-            UiSupport.aviso(this, "Nome, CNH e senha sao obrigatorios.");
-            return;
-        }
-
-        cliente = criarClienteDoFormulario();
 
         try {
             controller.cadastrarCliente(cliente);
