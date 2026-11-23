@@ -21,6 +21,14 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 public class TelaVeiculos extends JFrame {
+    private static final int COLUNA_PLACA = 0;
+    private static final int COLUNA_TIPO = 1;
+    private static final int COLUNA_MARCA = 2;
+    private static final int COLUNA_MODELO = 3;
+    private static final int COLUNA_STATUS = 4;
+    private static final int COLUNA_VALOR_DIARIO = 5;
+
+
     private final SistemaController controller = new SistemaController();
     private final DefaultTableModel modelo = new DefaultTableModel(
             new Object[]{"Placa", "Tipo", "Marca", "Modelo", "Status", "Valor diario"}, 0);
@@ -86,12 +94,12 @@ public class TelaVeiculos extends JFrame {
             List<Map<String, Object>> alteracoesPorLinha = new ArrayList<>();
 
             for (int linha = 0; linha < modelo.getRowCount(); linha++) {
-                String placa = valorDaCelula(linha, 0);
-                String tipo = valorDaCelula(linha, 1).toLowerCase();
-                String marca = valorDaCelula(linha, 2);
-                String nomeModelo = valorDaCelula(linha, 3);
-                String status = valorDaCelula(linha, 4).toLowerCase();
-                BigDecimal valorDiario = new BigDecimal(valorDaCelula(linha, 5).replace(",", "."));
+                String placa = valorDaCelula(linha, COLUNA_PLACA);
+                String tipo = valorDaCelula(linha, COLUNA_TIPO).toLowerCase();
+                String marca = valorDaCelula(linha, COLUNA_MARCA);
+                String nomeModelo = valorDaCelula(linha, COLUNA_MODELO);
+                String status = valorDaCelula(linha, COLUNA_STATUS).toLowerCase();
+                BigDecimal valorDiario = new BigDecimal(valorDaCelula(linha, COLUNA_VALOR_DIARIO).replace(",", "."));
 
                 if (placa.isEmpty()) {
                     throw new IllegalArgumentException("A placa nao pode ficar vazia.");
