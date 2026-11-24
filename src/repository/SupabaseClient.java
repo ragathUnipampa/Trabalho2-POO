@@ -44,6 +44,16 @@ public final class SupabaseClient {
         }
 
         HttpRequest request = builder.build();
-        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response =
+                HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException(
+                    "Requisicao ao Supabase rejeitada (HTTP "
+                            + response.statusCode()
+                            + "): "
+                            + response.body()
+            );
+        }
+        return response;
     }
 }

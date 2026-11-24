@@ -3,9 +3,11 @@ package repository;
 import model.Gerente;
 
 import java.util.List;
+import java.util.Set;
 
 public class GerenteRepository extends BaseRepository<Gerente> implements GerenteRepositoryPort {
     private static final String BASE_URL = SupabaseClient.getBaseUrl() + "/rest/v1/gerente";
+    private static final Set<String> FILTER_FIELDS = Set.of("email");
 
     public GerenteRepository() {
         super(BASE_URL);
@@ -13,7 +15,7 @@ public class GerenteRepository extends BaseRepository<Gerente> implements Gerent
 
     public List<Gerente> buscarGerentes(String email) {
         StringBuilder query = new StringBuilder();
-        appendFilter(query, "email", email);
+        appendFilter(query, FILTER_FIELDS, "email", email);
         return buscarLista(query.toString(), Gerente.class);
     }
 

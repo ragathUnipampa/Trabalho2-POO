@@ -195,3 +195,78 @@ As principais telas são:
 
 Nota:
 StatusVeiculo é declarado como enum, mas o atributo statusVeiculo de Veiculo é uma String. O projeto utiliza essa String porque o status é enviado e recebido pela API REST do Supabase como valor textual, com valores como "disponivel" e "indisponivel".
+
+---
+
+## 7. Reproduzir o banco de dados no Supabase
+
+Os scripts necessários estão na pasta `database/`:
+
+- `database/schema.sql`: cria as tabelas `cliente`, `gerente`, `veiculo` e `locacao`, suas chaves primárias, as duas relações estrangeiras e a configuração reproduzível de permissões e RLS;
+- `database/seed.sql`: opcionalmente insere dados fictícios de exemplo. As senhas presentes nele são somente exemplos de teste.
+
+### Procedimento
+
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/ragathUnipampa/Trabalho2-POO.git
+cd Trabalho2-POO
+```
+
+2. Crie um novo projeto no Supabase.
+
+3. No novo projeto, abra o **SQL Editor**.
+
+4. Abra o arquivo `database/schema.sql`, copie todo o conteúdo e execute-o no SQL Editor.
+
+5. Opcionalmente, execute `database/seed.sql` para adicionar dados fictícios de teste.
+
+6. Em **Settings > API** do novo projeto Supabase, obtenha:
+
+   - Project URL;
+   - Public/anon key.
+
+7. Configure esses dois valores em `src/config/SupabaseConfig.java`:
+
+```java
+public static final String URL = "https://SEU-PROJETO.supabase.co";
+public static final String ANON_KEY = "SUA_CHAVE_PUBLICA_ANON";
+```
+
+Não coloque `service_role`, outras chaves administrativas, tokens privados ou senhas reais no repositório.
+
+8. Compile o projeto a partir da raiz:
+
+```powershell
+$arquivos = Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName }
+javac -cp "lib/gson-2.14.0.jar" -d out $arquivos
+```
+
+9. Execute o sistema:
+
+```powershell
+java -cp "out;lib/gson-2.14.0.jar" Main
+```
+
+10. Faça uma verificação mínima:
+
+   - cadastre um cliente ou utilize os dados fictícios;
+   - autentique o cliente;
+   - cadastre ou consulte um veículo;
+   - realize uma locação;
+   - confirme no Table Editor que o status do veículo foi atualizado.
+
+### Estrutura criada pelo script
+
+- `cliente`: clientes cadastrados;
+- `gerente`: gerentes autorizados;
+- `veiculo`: veículos cadastrados, com `placa` única;
+- `locacao`: locações realizadas.
+
+As relações são:
+
+- `locacao.cliente_id` referencia `cliente.id`;
+- `locacao.veiculo_placa` referencia `veiculo.placa`.
+
+O script preserva a configuração real fornecida: RLS desativada nas quatro tabelas e acesso direto das operações da aplicação pelas roles `anon` e `authenticated`. Não cria políticas RLS adicionais, funções, triggers, índices diferentes dos confirmados ou dados reais.

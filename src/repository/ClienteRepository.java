@@ -3,9 +3,14 @@ package repository;
 import model.Cliente;
 
 import java.util.List;
+import java.util.Set;
 
 public class ClienteRepository extends BaseRepository<Cliente> implements ClienteRepositoryPort {
     private static final String BASE_URL = SupabaseClient.getBaseUrl() + "/rest/v1/cliente";
+    private static final Set<String> FILTER_FIELDS = Set.of("cnh");
+    private static final Set<String> WRITE_FIELDS = Set.of(
+            "nome", "telefone", "cnh", "categoria_cnh", "cep", "senha_cliente"
+    );
 
     public ClienteRepository() {
         super(BASE_URL);
@@ -13,7 +18,7 @@ public class ClienteRepository extends BaseRepository<Cliente> implements Client
 
     public List<Cliente> buscarClientes(String nome, String telefone, String cnh, String categoriaCnh, String cep) {
         StringBuilder query = new StringBuilder();
-        appendFilter(query, "cnh", cnh);
+        appendFilter(query, FILTER_FIELDS, "cnh", cnh);
         return buscarLista(query.toString(), Cliente.class);
     }
 
@@ -32,6 +37,6 @@ public class ClienteRepository extends BaseRepository<Cliente> implements Client
     }
 
     public Cliente cadastrarCliente(Cliente novoCliente) {
-        return salvar(baseUrl, novoCliente, Cliente.class);
+        return salvar(baseUrl, novoCliente, WRITE_FIELDS, Cliente.class);
     }
 }
