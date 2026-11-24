@@ -20,15 +20,21 @@ public class TelaGerente extends JFrame {
     private final SistemaController controller = new SistemaController();
 
     public TelaGerente(model.Gerente gerente) {
-        setTitle("Painel do gerente - " + gerente.getEmail()); setSize(720, 430); setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setTitle("Painel do gerente - " + gerente.getEmail()); setSize(720, 430);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null); construirTela();
     }
     private void construirTela() {
-        JPanel painel = new JPanel(new BorderLayout(10, 10)); painel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        JPanel painel = new JPanel(new BorderLayout(10, 10));
+        painel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         painel.add(new JLabel("Administracao da locadora", JLabel.CENTER), BorderLayout.NORTH);
         JPanel menu = new JPanel(new GridLayout(1, 4, 8, 8)); JButton clientes = new JButton("Clientes");
-        JButton veiculos = new JButton("Veiculos"); JButton cadastrar = new JButton("Cadastrar veiculo"); JButton sair = new JButton("Sair");
-        clientes.addActionListener(event -> mostrarClientes()); veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
+        JButton veiculos = new JButton("Veiculos");
+        JButton cadastrar = new JButton("Cadastrar veiculo");
+        JButton sair = new JButton("Sair");
+
+        clientes.addActionListener(event -> mostrarClientes());
+        veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
         cadastrar.addActionListener(event -> cadastrarVeiculo()); sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
         menu.add(clientes); menu.add(veiculos); menu.add(cadastrar); menu.add(sair); painel.add(menu, BorderLayout.SOUTH); setContentPane(painel);
     }
@@ -42,18 +48,27 @@ public class TelaGerente extends JFrame {
             UiSupport.erro(this, "Nao foi possivel consultar os clientes.", erro);
             return;
         }
-        JPanel painel = new JPanel(new BorderLayout()); painel.add(new JScrollPane(new JTable(modelo)), BorderLayout.CENTER);
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.add(new JScrollPane(new JTable(modelo)), BorderLayout.CENTER);
         painel.setPreferredSize(new java.awt.Dimension(650, 280));
         javax.swing.JOptionPane.showMessageDialog(this, painel, "Clientes cadastrados", javax.swing.JOptionPane.PLAIN_MESSAGE);
     }
     private void cadastrarVeiculo() {
-        JTextField placa = new JTextField(); JTextField marca = new JTextField(); JTextField modelo = new JTextField();
-        JTextField ano = new JTextField(); JComboBox<String> tipo = new JComboBox<>(new String[]{"carro", "moto"}); JTextField valor = new JTextField();
+        JTextField placa = new JTextField(); JTextField marca = new JTextField();
+        JTextField modelo = new JTextField();
+        JTextField ano = new JTextField(); JComboBox<String> tipo = new JComboBox<>(new String[]{"carro", "moto"});
+        JTextField valor = new JTextField();
         Object[] campos = {"Placa:", placa, "Tipo:", tipo, "Marca:", marca, "Modelo:", modelo, "Ano:", ano, "Valor diario:", valor};
         if (javax.swing.JOptionPane.showConfirmDialog(this, campos, "Cadastrar veiculo", javax.swing.JOptionPane.OK_CANCEL_OPTION)
                 != javax.swing.JOptionPane.OK_OPTION) return;
         try {
-            if (placa.getText().trim().isEmpty() || marca.getText().trim().isEmpty()) throw new IllegalArgumentException();
+            if (placa.getText().trim().isEmpty()) {
+                throw new IllegalArgumentException("A placa é obrigatória.");
+            }
+
+            if (marca.getText().trim().isEmpty()) {
+                throw new IllegalArgumentException("A marca é obrigatória.");
+            }
             model.Veiculo veiculo = new model.Veiculo();
             veiculo.setPlaca(placa.getText().trim());
             veiculo.setTipoVeiculo((String) tipo.getSelectedItem());

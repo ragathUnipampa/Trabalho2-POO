@@ -12,8 +12,11 @@ public class TelaCliente extends JFrame {
     private final model.Cliente cliente;
     public TelaCliente(model.Cliente cliente) {
         this.cliente = cliente;
-        setTitle("Area do cliente"); setSize(520, 360);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); setLocationRelativeTo(null); construirTela();
+        setTitle("Area do cliente");
+        setSize(520, 360);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        construirTela();
     }
     private void construirTela() {
         JPanel painel = new JPanel(new BorderLayout(12, 12));

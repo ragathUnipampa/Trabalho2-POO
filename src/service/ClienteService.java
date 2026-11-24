@@ -28,8 +28,8 @@ public class ClienteService implements ClienteServicePort {
 
         try {
             return clienteRepository.autenticarCliente(cnh, senha);
-        } catch (RuntimeException e) {
-            throw new LocacaoException("Erro ao autenticar cliente: " + e.getMessage());
+        } catch (RuntimeException erro) {
+            throw new LocacaoException("Erro ao autenticar cliente: " + erro.getMessage());
         }
     }
 
@@ -50,16 +50,16 @@ public class ClienteService implements ClienteServicePort {
                 throw new LocacaoException("Já existe um cliente cadastrado com esta CNH.");
             }
             return clienteRepository.cadastrarCliente(cliente);
-        } catch (RuntimeException e) {
-            throw new LocacaoException("Erro ao cadastrar cliente: " + e.getMessage());
+        } catch (RuntimeException erro) {
+            throw new LocacaoException("Erro ao cadastrar cliente: " + erro.getMessage());
         }
     }
 
     public List<Cliente> buscarClientes() {
         try {
             return clienteRepository.buscarClientes(null, null, null, null, null);
-        } catch (RuntimeException e) {
-            throw new IllegalStateException("Erro ao buscar clientes: " + e.getMessage());
+        } catch (RuntimeException erro) {
+            throw new IllegalStateException("Erro ao buscar clientes: " + erro.getMessage());
         }
     }
 }
