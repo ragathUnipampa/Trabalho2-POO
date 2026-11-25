@@ -7,6 +7,11 @@ import exception.LocacaoException;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Tela de formulário destinada ao cadastro de novos clientes no sistema.
+ * Coleta dados pessoais, informações da CNH e credenciais de acesso,
+ * delegando a validação de negócio e persistência ao {@link SistemaController}.
+ */
 public class TelaCadastroCliente extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final JTextField nome = new JTextField();
@@ -16,6 +21,10 @@ public class TelaCadastroCliente extends JFrame {
     private final JTextField cep = new JTextField();
     private final JPasswordField senha = new JPasswordField();
 
+    /**
+     * Constrói e exibe a janela de cadastro de clientes com seus respectivos
+     * campos de entrada e botões de ação.
+     */
     public TelaCadastroCliente() {
         setTitle("Cadastro de cliente");
         setSize(500, 390);

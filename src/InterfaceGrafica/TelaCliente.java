@@ -8,8 +8,19 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Painel principal de navegação do cliente autenticado.
+ * Permite acessar a consulta de veículos disponíveis, iniciar uma nova locação
+ * ou encerrar a sessão atual.
+ */
 public class TelaCliente extends JFrame {
     private final model.Cliente cliente;
+
+    /**
+     * Constrói a área do cliente associada à sessão do usuário autenticado.
+     *
+     * @param cliente O objeto {@link model.Cliente} representando o usuário logado no sistema.
+     */
     public TelaCliente(model.Cliente cliente) {
         this.cliente = cliente;
         setTitle("Area do cliente");
@@ -18,6 +29,7 @@ public class TelaCliente extends JFrame {
         setLocationRelativeTo(null);
         construirTela();
     }
+
     private void construirTela() {
         JPanel painel = new JPanel(new BorderLayout(12, 12));
         painel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -28,8 +40,14 @@ public class TelaCliente extends JFrame {
         JButton sair = new JButton("Sair");
         veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
         locacao.addActionListener(event -> new TelaLocacao(this, cliente).setVisible(true));
-        sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
-        menu.add(veiculos); menu.add(locacao); menu.add(sair); painel.add(menu, BorderLayout.CENTER);
+        sair.addActionListener(event -> {
+            dispose();
+            new TelaPrincipal().setVisible(true);
+        });
+        menu.add(veiculos);
+        menu.add(locacao);
+        menu.add(sair);
+        painel.add(menu, BorderLayout.CENTER);
         setContentPane(painel);
     }
 }

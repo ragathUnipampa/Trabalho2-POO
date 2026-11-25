@@ -7,6 +7,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import javax.swing.*;
 
+/**
+ * Tela responsável pelo registro de uma nova locação de veículo por um cliente.
+ * Permite informar a placa do veículo, o período desejado e a forma de pagamento,
+ * realizando o cálculo prévio de diárias e delegando a efetivação ao controlador.
+ */
 public class TelaLocacao extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final model.Cliente cliente;
@@ -15,6 +20,13 @@ public class TelaLocacao extends JFrame {
     private final JTextField dataFim = new JTextField();
     private final JComboBox<String> pagamento = new JComboBox<>(new String[]{"dinheiro", "cartao", "pix"});
 
+    /**
+     * Constrói o formulário de nova locação vinculado a um cliente e centralizado
+     * em relação à janela anterior.
+     *
+     * @param anterior A janela pai que invocou esta tela, usada como referência de posicionamento.
+     * @param cliente  O cliente autenticado que está realizando a locação.
+     */
     public TelaLocacao(JFrame anterior, model.Cliente cliente) {
         this.cliente = cliente;
         setTitle("Nova locacao");

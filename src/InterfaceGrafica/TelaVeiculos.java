@@ -20,6 +20,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Tela de consulta e edição tabular da frota de veículos da locadora.
+ * Permite filtrar veículos por categoria (carro ou moto) e persistir
+ * alterações feitas diretamente nas células da tabela.
+ */
 public class TelaVeiculos extends JFrame {
     private static final int COLUNA_PLACA = 0;
     private static final int COLUNA_TIPO = 1;
@@ -36,6 +41,11 @@ public class TelaVeiculos extends JFrame {
     private final JComboBox<String> filtro = new JComboBox<>(new String[]{"todos", "carro", "moto"});
     private List<model.Veiculo> veiculosAtuais = new ArrayList<>();
 
+    /**
+     * Constrói a janela de gerenciamento de veículos e carrega os registros iniciais na tabela.
+     *
+     * @param anterior A janela pai que abriu esta tela, utilizada para centralização.
+     */
     public TelaVeiculos(JFrame anterior) {
         setTitle("Veiculos");
         setSize(760, 420);
