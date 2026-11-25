@@ -5,18 +5,17 @@ import exception.LocacaoException;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Dimension;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
@@ -35,53 +34,83 @@ public class TelaVeiculos extends JFrame {
     private final JTable tabela = new JTable(modelo);
     private final JComboBox<String> filtro = new JComboBox<>(new String[]{"todos", "carro", "moto"});
     private List<model.Veiculo> veiculosAtuais = new ArrayList<>();
+    private JButton botaoBuscar;
+    private JButton botaoSalvar;
 
     public TelaVeiculos(JFrame anterior) {
-        setTitle("Veiculos");
-        setSize(760, 420);
+        setTitle("Autobots");
+        setSize(900, 560);
+        setMinimumSize(new Dimension(700, 440));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(anterior);
 
-        JPanel painel = new JPanel(new BorderLayout(8, 8));
-        painel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        JPanel conteudo = new JPanel(new BorderLayout(0, 14));
+        conteudo.setOpaque(false);
 
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton buscar = new JButton("Buscar");
-        JButton salvar = new JButton("Salvar alteracoes");
+        topo.setOpaque(false);
+        topo.add(new javax.swing.JLabel("Categoria"));
+        UiSupport.estilizarCampo(filtro);
+        botaoBuscar = UiSupport.botaoSecundario("Atualizar lista");
+        botaoSalvar = UiSupport.botaoPrimario("Salvar alteracoes");
+        botaoSalvar.setEnabled(false);
 
-        buscar.addActionListener(event -> atualizarTabela());
-        salvar.addActionListener(event -> salvarAlteracoes());
+        botaoBuscar.addActionListener(event -> atualizarTabela());
+        botaoSalvar.addActionListener(event -> salvarAlteracoes());
 
         topo.add(filtro);
-        topo.add(buscar);
-        topo.add(salvar);
+        topo.add(botaoBuscar);
+        topo.add(botaoSalvar);
 
-        painel.add(topo, BorderLayout.NORTH);
-        painel.add(new JScrollPane(tabela), BorderLayout.CENTER);
-        setContentPane(painel);
+        JPanel ferramentas = UiSupport.criarCartao(new BorderLayout());
+        ferramentas.add(topo, BorderLayout.CENTER);
+        conteudo.add(ferramentas, BorderLayout.NORTH);
+        conteudo.add(UiSupport.criarScrollTabela(tabela), BorderLayout.CENTER);
+        setContentPane(UiSupport.criarPagina(
+                "Veiculos da locadora.",
+                conteudo));
         atualizarTabela();
     }
 
     private void atualizarTabela() {
-        modelo.setRowCount(0);
         String tipo = "todos".equals(filtro.getSelectedItem()) ? null : (String) filtro.getSelectedItem();
-
-        try {
-            veiculosAtuais = controller.buscarVeiculos(tipo, null);
-            for (model.Veiculo veiculo : veiculosAtuais) {
-                modelo.addRow(new Object[]{
-                        veiculo.getPlaca(),
-                        veiculo.getTipoVeiculo(),
-                        veiculo.getMarca(),
-                        veiculo.getModelo(),
-                        veiculo.getStatusVeiculo(),
-                        veiculo.getValorDiario()
+        filtro.setEnabled(false);
+        tabela.setEnabled(false);
+        botaoSalvar.setEnabled(false);
+        UiSupport.executarEmSegundoPlano(
+                botaoBuscar,
+                "Carregando...",
+                () -> controller.buscarVeiculos(tipo, null),
+                veiculos -> {
+                    filtro.setEnabled(true);
+                    tabela.setEnabled(true);
+                    exibirVeiculos(veiculos);
+                    botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                },
+                erro -> {
+                    filtro.setEnabled(true);
+                    tabela.setEnabled(true);
+                    botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                    if (erro instanceof LocacaoException) {
+                        UiSupport.aviso(this, erro.getMessage());
+                    } else {
+                        UiSupport.erro(this, "Nao foi possivel consultar os veiculos.", erro);
+                    }
                 });
-            }
-        } catch (LocacaoException erro) {
-            UiSupport.aviso(this, erro.getMessage());
-        } catch (RuntimeException erro) {
-            UiSupport.erro(this, "Nao foi possivel consultar os veiculos.", erro);
+    }
+
+    private void exibirVeiculos(List<model.Veiculo> veiculos) {
+        veiculosAtuais = veiculos;
+        modelo.setRowCount(0);
+        for (model.Veiculo veiculo : veiculosAtuais) {
+            modelo.addRow(new Object[]{
+                    veiculo.getPlaca(),
+                    veiculo.getTipoVeiculo(),
+                    veiculo.getMarca(),
+                    veiculo.getModelo(),
+                    veiculo.getStatusVeiculo(),
+                    veiculo.getValorDiario()
+            });
         }
     }
 
@@ -90,9 +119,8 @@ public class TelaVeiculos extends JFrame {
             tabela.getCellEditor().stopCellEditing();
         }
 
+        List<Map<String, Object>> alteracoesPorLinha = new ArrayList<>();
         try {
-            List<Map<String, Object>> alteracoesPorLinha = new ArrayList<>();
-
             for (int linha = 0; linha < modelo.getRowCount(); linha++) {
                 String placa = valorDaCelula(linha, COLUNA_PLACA);
                 String tipo = valorDaCelula(linha, COLUNA_TIPO).toLowerCase();
@@ -124,22 +152,40 @@ public class TelaVeiculos extends JFrame {
                 alteracoesPorLinha.add(alteracoes);
             }
 
-            for (int linha = 0; linha < veiculosAtuais.size(); linha++) {
-                controller.editarVeiculo(
-                        veiculosAtuais.get(linha).getId(),
-                        alteracoesPorLinha.get(linha)
-                );
-            }
-
-            atualizarTabela();
-            JOptionPane.showMessageDialog(this, "Alteracoes salvas com sucesso.");
         } catch (IllegalArgumentException erro) {
             UiSupport.aviso(this, erro.getMessage());
-        } catch (LocacaoException erro) {
-            UiSupport.aviso(this, erro.getMessage());
-        } catch (RuntimeException erro) {
-            UiSupport.erro(this, "Nao foi possivel salvar as alteracoes.", erro);
+            return;
         }
+
+        tabela.setEnabled(false);
+        botaoBuscar.setEnabled(false);
+        filtro.setEnabled(false);
+        UiSupport.executarEmSegundoPlano(
+                botaoSalvar,
+                "Salvando...",
+                () -> {
+                    for (int linha = 0; linha < veiculosAtuais.size(); linha++) {
+                        controller.editarVeiculo(veiculosAtuais.get(linha).getId(), alteracoesPorLinha.get(linha));
+                    }
+                    return null;
+                },
+                resultado -> {
+                    tabela.setEnabled(true);
+                    botaoBuscar.setEnabled(true);
+                    filtro.setEnabled(true);
+                    atualizarTabela();
+                    JOptionPane.showMessageDialog(this, "Alteracoes salvas com sucesso.");
+                },
+                erro -> {
+                    tabela.setEnabled(true);
+                    botaoBuscar.setEnabled(true);
+                    filtro.setEnabled(true);
+                    if (erro instanceof LocacaoException) {
+                        UiSupport.aviso(this, erro.getMessage());
+                    } else {
+                        UiSupport.erro(this, "Nao foi possivel salvar as alteracoes.", erro);
+                    }
+                });
     }
 
     private String valorDaCelula(int linha, int coluna) {
