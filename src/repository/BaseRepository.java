@@ -15,10 +15,22 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
+/**
+ * Classe base abstrata que centraliza operações genéricas de persistência, consulta
+ * e sanitização de dados via API REST do Supabase.
+ *
+ * @param <T> O tipo da entidade de domínio gerenciada pelo repositório concreto.
+ */
 public abstract class BaseRepository<T> {
     protected final Gson gson;
     protected final String baseUrl;
 
+    /**
+     * Inicializa o repositório base configurando a URL do recurso e a instância
+     * do {@link Gson} com suporte à serialização de {@link LocalDate}.
+     *
+     * @param baseUrl A URL base do endpoint da tabela no Supabase.
+     */
     protected BaseRepository(String baseUrl) {
         this.baseUrl = baseUrl;
         this.gson = new GsonBuilder()
@@ -26,6 +38,16 @@ public abstract class BaseRepository<T> {
                 .create();
     }
 
+    /**
+     * Anexa um parâmetro de filtro de igualdade ({@code eq}) à string de consulta HTTP,
+     * validando se o campo está na lista branca de campos permitidos.
+     *
+     * @param query         O {@link StringBuilder} acumulando os parâmetros da URL.
+     * @param allowedFields O conjunto de nomes de colunas autorizados para filtragem.
+     * @param field         O nome da coluna no banco de dados.
+     * @param value         O valor a ser filtrado (ignorado se for {@code null} ou string em branco).
+     * @throws IllegalArgumentException Se o campo informado não estiver contido em {@code allowedFields}.
+     */
     protected void appendFilter(
             StringBuilder query,
             Set<String> allowedFields,
@@ -50,6 +72,14 @@ public abstract class BaseRepository<T> {
                 .append(encodeQueryComponent(String.valueOf(value)));
     }
 
+    /**
+     * Valida e higieniza um mapa de dados antes de enviá-lo em uma requisição de atualização parcial ({@code PATCH}).
+     *
+     * @param payload       O mapa contendo os pares coluna/valor a serem atualizados.
+     * @param allowedFields O conjunto de colunas permitidas para alteração.
+     * @return Um novo {@link Map} contendo apenas os campos validados e não nulos.
+     * @throws IllegalArgumentException Se o payload estiver vazio, contiver colunas não permitidas ou valores nulos.
+     */
     protected Map<String, Object> sanitizePatchPayload(
             Map<String, Object> payload,
             Set<String> allowedFields
@@ -71,6 +101,15 @@ public abstract class BaseRepository<T> {
         return sanitized;
     }
 
+    /**
+     * Executa uma consulta {@code GET} na tabela configurada e converte a resposta JSON
+     * em uma lista tipada de entidades.
+     *
+     * @param query Os parâmetros de filtro já formatados e codificados para anexar à URL.
+     * @param tipo  A classe da entidade de destino para desserialização.
+     * @return Uma {@link List} contendo os registros encontrados.
+     * @throws RuntimeException Se ocorrer falha de comunicação ou erro na conversão do JSON.
+     */
     protected List<T> buscarLista(String query, Class<T> tipo) {
         try {
             String url = baseUrl + "?select=*";
@@ -85,6 +124,17 @@ public abstract class BaseRepository<T> {
         }
     }
 
+    /**
+     * Valida os atributos do objeto e insere um novo registro no banco de dados via requisição {@code POST}.
+     *
+     * @param url           A URL de destino da requisição.
+     * @param payload       O objeto contendo os dados da nova entidade a ser persistida.
+     * @param allowedFields O conjunto de campos autorizados para gravação.
+     * @param tipo          A classe da entidade para desserializar o registro retornado pelo banco.
+     * @return A entidade persistida com os dados gerados pelo banco (como ID e timestamps), ou {@code null}.
+     * @throws IllegalArgumentException Se o payload não for um objeto JSON válido ou contiver campos não autorizados.
+     * @throws RuntimeException         Se ocorrer falha na requisição HTTP ou no processamento da resposta.
+     */
     protected T salvar(
             String url,
             Object payload,
@@ -122,6 +172,17 @@ public abstract class BaseRepository<T> {
         }
     }
 
+    /**
+     * Atualiza parcialmente um ou mais registros no banco de dados via requisição {@code PATCH}.
+     *
+     * @param url           A URL contendo o filtro identificador do registro a ser alterado.
+     * @param payload       O mapa com os campos e novos valores a serem aplicados.
+     * @param allowedFields O conjunto de colunas permitidas para modificação.
+     * @param tipo          A classe da entidade para desserializar o registro atualizado.
+     * @return A entidade atualizada retornada pelo banco, ou {@code null} se nenhum registro foi afetado.
+     * @throws IllegalArgumentException Se os dados informados violarem as regras de sanitização.
+     * @throws RuntimeException         Se ocorrer erro na comunicação com o servidor.
+     */
     protected T atualizar(
             String url,
             Map<String, Object> payload,
@@ -144,6 +205,14 @@ public abstract class BaseRepository<T> {
         }
     }
 
+    /**
+     * Codifica um componente de valor de consulta para uso seguro em URLs (UTF-8),
+     * substituindo sinais de {@code +} por {@code %20}.
+     *
+     * @param valor O texto bruto a ser codificado.
+     * @return A string devidamente codificada para URL, ou string vazia se {@code valor} for {@code null}.
+     * @throws IllegalArgumentException Se ocorrer falha na codificação de caracteres.
+     */
     protected String encodeQueryComponent(String valor) {
         if (valor == null) {
             return "";

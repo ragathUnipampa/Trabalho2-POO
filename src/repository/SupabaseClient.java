@@ -8,6 +8,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+/**
+ * Cliente HTTP utilitário responsável por encapsular a comunicação com a API REST do Supabase,
+ * gerenciando cabeçalhos de autenticação ({@code apikey} e {@code Bearer}) e validação de status HTTP.
+ */
 public final class SupabaseClient {
     private static final String SUPABASE_URL = SupabaseConfig.URL;
     private static final String SUPABASE_KEY = SupabaseConfig.ANON_KEY;
@@ -17,10 +21,27 @@ public final class SupabaseClient {
     private SupabaseClient() {
     }
 
+    /**
+     * Retorna a URL base configurada para a instância do projeto no Supabase.
+     *
+     * @return A string contendo a URL raiz do servidor Supabase.
+     */
     public static String getBaseUrl() {
         return SUPABASE_URL;
     }
 
+    /**
+     * Envia uma requisição HTTP síncrona para o Supabase e valida se o código de resposta
+     * indica sucesso (faixa {@code 2xx}).
+     *
+     * @param url    A URL completa do recurso de destino.
+     * @param method O verbo HTTP da requisição ({@code GET}, {@code POST}, {@code PATCH}, etc.).
+     * @param body   O corpo da requisição em formato JSON (pode ser {@code null} em requisições {@code GET}).
+     * @param prefer O valor do cabeçalho HTTP {@code Prefer} do PostgREST (ex: {@code "return=representation"}), opcional.
+     * @return O objeto {@link HttpResponse} contendo o corpo e metadados da resposta bem-sucedida.
+     * @throws IOException          Se ocorrer falha de rede ou se o servidor retornar status HTTP fora da faixa {@code 200-299}.
+     * @throws InterruptedException Se a thread atual for interrompida enquanto aguarda a resposta HTTP.
+     */
     public static HttpResponse<String> send(String url, String method, String body, String prefer) throws IOException, InterruptedException {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
