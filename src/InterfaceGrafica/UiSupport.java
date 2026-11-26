@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
+import java.awt.Window;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -253,11 +254,11 @@ public final class UiSupport {
         return scroll;
     }
 
-    static void aviso(JFrame parent, String mensagem) {
+    static void aviso(Window parent, String mensagem) {
         JOptionPane.showMessageDialog(parent, mensagem, "Atencao", JOptionPane.WARNING_MESSAGE);
     }
 
-    static void erro(JFrame parent, String mensagem, Throwable erro) {
+    static void erro(Window parent, String mensagem, Throwable erro) {
         String detalhe = erro.getMessage() == null ? "Erro desconhecido." : erro.getMessage();
         JOptionPane.showMessageDialog(parent, mensagem + "\n" + detalhe, "Erro", JOptionPane.ERROR_MESSAGE);
     }

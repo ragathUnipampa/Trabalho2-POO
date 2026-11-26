@@ -4,11 +4,13 @@ import controller.SistemaController;
 import exception.LocacaoException;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -47,7 +49,7 @@ public class TelaGerente extends JFrame {
 
         clientes.addActionListener(event -> mostrarClientes(clientes));
         veiculos.addActionListener(event -> new TelaVeiculos(this, true).setVisible(true));
-        cadastrar.addActionListener(event -> cadastrarVeiculo(cadastrar));
+        cadastrar.addActionListener(event -> cadastrarVeiculo());
         sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
         menu.add(clientes);
         menu.add(veiculos);
@@ -85,55 +87,87 @@ public class TelaGerente extends JFrame {
                 erro -> UiSupport.erro(this, "Nao foi possivel consultar os clientes.", erro));
     }
 
-    private void cadastrarVeiculo(JButton botaoCadastrar) {
-        JTextField placa = new JTextField(); JTextField marca = new JTextField();
+    private void cadastrarVeiculo() {
+        JTextField placa = new JTextField();
+        JTextField marca = new JTextField();
         JTextField modelo = new JTextField();
-        JTextField ano = new JTextField(); JComboBox<String> tipo = new JComboBox<>(new String[]{"carro", "moto"});
+        JTextField ano = new JTextField();
+        JComboBox<String> tipo = new JComboBox<>(new String[]{"carro", "moto"});
         JTextField valor = new JTextField();
-        JPanel campos = new JPanel(new GridLayout(0, 2, 12, 12));
-        campos.setBackground(UiSupport.SUPERFICIE);
+        JPanel campos = new JPanel(new GridLayout(0, 2, 14, 14));
+        campos.setOpaque(false);
         campos.add(UiSupport.criarCampo("Placa", placa));
         campos.add(UiSupport.criarCampo("Tipo", tipo));
         campos.add(UiSupport.criarCampo("Marca", marca));
         campos.add(UiSupport.criarCampo("Modelo", modelo));
         campos.add(UiSupport.criarCampo("Ano", ano));
         campos.add(UiSupport.criarCampo("Valor diario", valor));
-        if (javax.swing.JOptionPane.showConfirmDialog(this, campos, "Cadastrar veiculo", javax.swing.JOptionPane.OK_CANCEL_OPTION)
-                != javax.swing.JOptionPane.OK_OPTION) return;
-        try {
-            if (placa.getText().trim().isEmpty()) {
-                throw new IllegalArgumentException("A placa é obrigatória.");
-            }
 
-            if (marca.getText().trim().isEmpty()) {
-                throw new IllegalArgumentException("A marca é obrigatória.");
+        JDialog dialogo = new JDialog(this, "Autobots", true);
+        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogo.setSize(650, 540);
+        dialogo.setMinimumSize(new Dimension(560, 500));
+
+        JPanel cartao = UiSupport.criarCartao(new BorderLayout(0, 20));
+        cartao.add(campos, BorderLayout.CENTER);
+
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        acoes.setOpaque(false);
+        JButton cancelar = UiSupport.botaoSecundario("Cancelar");
+        JButton salvar = UiSupport.botaoPrimario("Cadastrar veiculo");
+        cancelar.addActionListener(event -> dialogo.dispose());
+        salvar.addActionListener(event -> {
+            try {
+                if (placa.getText().trim().isEmpty() || marca.getText().trim().isEmpty()) {
+                    UiSupport.aviso(dialogo, "Placa e marca sao obrigatorias.");
+                    return;
+                }
+
+                model.Veiculo veiculo = new model.Veiculo();
+                veiculo.setPlaca(placa.getText().trim());
+                veiculo.setTipoVeiculo((String) tipo.getSelectedItem());
+                veiculo.setMarca(marca.getText().trim());
+                veiculo.setModelo(modelo.getText().trim());
+                veiculo.setAno(Integer.valueOf(ano.getText().trim()));
+                veiculo.setStatusVeiculo("disponivel");
+                veiculo.setValorDiario(new java.math.BigDecimal(valor.getText().trim().replace(",", ".")));
+
+                UiSupport.executarEmSegundoPlano(
+                        salvar,
+                        "Cadastrando...",
+                        () -> {
+                            controller.cadastrarVeiculo(veiculo);
+                            return null;
+                        },
+                        resultado -> {
+                            dialogo.dispose();
+                            javax.swing.JOptionPane.showMessageDialog(
+                                    this, "Veiculo cadastrado com sucesso.");
+                        },
+                        erro -> {
+                            if (erro instanceof LocacaoException) {
+                                UiSupport.aviso(dialogo, erro.getMessage());
+                            } else {
+                                UiSupport.erro(dialogo, "Nao foi possivel cadastrar o veiculo.", erro);
+                            }
+                        },
+                        placa, tipo, marca, modelo, ano, valor, cancelar);
+            } catch (NumberFormatException erro) {
+                UiSupport.aviso(dialogo, "Informe um ano e um valor diario validos.");
+            } catch (IllegalArgumentException erro) {
+                UiSupport.aviso(dialogo, erro.getMessage());
             }
-            model.Veiculo veiculo = new model.Veiculo();
-            veiculo.setPlaca(placa.getText().trim());
-            veiculo.setTipoVeiculo((String) tipo.getSelectedItem());
-            veiculo.setMarca(marca.getText().trim());
-            veiculo.setModelo(modelo.getText().trim());
-            veiculo.setAno(Integer.valueOf(ano.getText().trim()));
-            veiculo.setStatusVeiculo("disponivel");
-            veiculo.setValorDiario(new java.math.BigDecimal(valor.getText().trim()));
-            UiSupport.executarEmSegundoPlano(
-                    botaoCadastrar,
-                    "Cadastrando...",
-                    () -> {
-                        controller.cadastrarVeiculo(veiculo);
-                        return null;
-                    },
-                    resultado -> javax.swing.JOptionPane.showMessageDialog(
-                            this, "Veiculo cadastrado com sucesso."),
-                    erro -> {
-                        if (erro instanceof LocacaoException) {
-                            UiSupport.aviso(this, erro.getMessage());
-                        } else {
-                            UiSupport.erro(this, "Nao foi possivel cadastrar o veiculo.", erro);
-                        }
-                    });
-        } catch (RuntimeException erro) {
-            UiSupport.aviso(this, "Preencha os dados do veiculo corretamente.");
-        }
+        });
+        acoes.add(cancelar);
+        acoes.add(salvar);
+        cartao.add(acoes, BorderLayout.SOUTH);
+
+        JPanel conteudo = new JPanel(new BorderLayout());
+        conteudo.setOpaque(false);
+        conteudo.add(cartao, BorderLayout.NORTH);
+        dialogo.setContentPane(UiSupport.criarPagina("Cadastrar novo Veiculo", conteudo));
+        dialogo.getRootPane().setDefaultButton(salvar);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
     }
 }
