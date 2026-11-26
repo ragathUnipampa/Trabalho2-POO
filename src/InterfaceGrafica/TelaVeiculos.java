@@ -58,8 +58,10 @@ public class TelaVeiculos extends JFrame {
         JPanel conteudo = new JPanel(new BorderLayout(0, 14));
         conteudo.setOpaque(false);
 
-        JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel topo = new JPanel(new BorderLayout(10, 0));
         topo.setOpaque(false);
+        JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        filtros.setOpaque(false);
         JLabel filtroLabel = new JLabel("Mostrar:");
         filtroLabel.setLabelFor(filtroTodos);
         JPanel opcoesFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -67,11 +69,12 @@ public class TelaVeiculos extends JFrame {
         opcoesFiltro.add(filtroTodos);
         opcoesFiltro.add(filtroCarros);
         opcoesFiltro.add(filtroMotos);
-        topo.add(filtroLabel);
-        topo.add(opcoesFiltro);
+        filtros.add(filtroLabel);
+        filtros.add(opcoesFiltro);
         estadoLista.setFont(new Font("SansSerif", Font.PLAIN, 12));
         estadoLista.setForeground(UiSupport.TEXTO_SECUNDARIO);
-        topo.add(estadoLista);
+        filtros.add(estadoLista);
+        topo.add(filtros, BorderLayout.WEST);
         filtroTodos.setSelected(true);
         atualizarEstiloFiltros();
 
@@ -80,6 +83,13 @@ public class TelaVeiculos extends JFrame {
             botaoSalvar.setEnabled(false);
             botaoSalvar.addActionListener(event -> salvarAlteracoes());
             topo.add(botaoSalvar);
+        } else if (cliente != null) {
+            JButton sair = UiSupport.botaoSecundario("Sair");
+            sair.addActionListener(event -> voltarParaLogin());
+            JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            acoes.setOpaque(false);
+            acoes.add(sair);
+            topo.add(acoes, BorderLayout.EAST);
         }
 
         JPanel ferramentas = UiSupport.criarCartao(new BorderLayout());
@@ -98,6 +108,11 @@ public class TelaVeiculos extends JFrame {
 
         setContentPane(UiSupport.criarPagina("Veiculos da locadora.", conteudo));
         atualizarLista();
+    }
+
+    private void voltarParaLogin() {
+        new TelaPrincipal().setVisible(true);
+        dispose();
     }
 
     private void atualizarLista() {
