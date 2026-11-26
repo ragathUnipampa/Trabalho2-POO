@@ -5,6 +5,7 @@ import controller.SistemaController;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeParseException;
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -178,6 +179,12 @@ public class TelaLocacao extends JFrame {
             LocalDate inicio = LocalDate.parse(dataInicio.getText().trim());
             LocalDate fim = LocalDate.parse(dataFim.getText().trim());
 
+            if (inicio.isBefore(LocalDate.now())) {
+                UiSupport.aviso(this, "Data invalida.");
+                dataInicio.requestFocusInWindow();
+                return;
+            }
+
             long dias = ChronoUnit.DAYS.between(inicio, fim);
             if (dias <= 0) {
                 UiSupport.aviso(this, "A data final deve ser posterior a data inicial.");
@@ -215,6 +222,8 @@ public class TelaLocacao extends JFrame {
                         }
                     },
                     placa, dataInicio, dataFim, pagamento);
+        } catch (DateTimeParseException erro) {
+            UiSupport.aviso(this, "Data invalida.");
         } catch (RuntimeException erro) {
             UiSupport.erro(this, "Nao foi possivel registrar a locacao.", erro);
         }
