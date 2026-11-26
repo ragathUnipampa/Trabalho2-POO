@@ -17,12 +17,20 @@ public class TelaLocacao extends JFrame {
     private JButton botaoConfirmar;
 
     public TelaLocacao(JFrame anterior, model.Cliente cliente) {
+        this(anterior, cliente, null);
+    }
+
+    public TelaLocacao(JFrame anterior, model.Cliente cliente, String placaVeiculo) {
         this.cliente = cliente;
         setTitle("Autobots");
         setSize(600, 650);
         setMinimumSize(new Dimension(530, 590));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(anterior);
+        if (placaVeiculo != null && !placaVeiculo.isBlank()) {
+            placa.setText(placaVeiculo);
+            placa.setEditable(false);
+        }
         construirTela();
     }
 

@@ -148,12 +148,11 @@ A aplicação depende do acesso ao Supabase para as operações realizadas pelos
 
 As principais telas são:
 
-- `TelaPrincipal`: tela inicial de autenticação e acesso ao cadastro de cliente;
+- `TelaPrincipal`: tela inicial de autenticação e acesso ao cadastro de cliente; após autenticar, o cliente vai direto à lista de veículos;
 - `TelaCadastroCliente`: formulário de cadastro de cliente;
-- `TelaCliente`: área do cliente, com acesso à consulta de veículos e realização de locação;
 - `TelaGerente`: área do gerente, com consulta de clientes, consulta/edição de veículos e cadastro de veículos;
-- `TelaVeiculos`: consulta e edição dos dados dos veículos;
-- `TelaLocacao`: formulário de realização da locação;
+- `TelaVeiculos`: lista os veículos em cartões; clientes podem iniciar uma locação apenas para veículos disponíveis, e gerentes podem editar a frota;
+- `TelaLocacao`: formulário de realização da locação, aberto com a placa do veículo selecionado e com disponibilidade revalidada antes de registrar;
 - `TelaLoginGerente`: tela de login de gerente.
 
 ---

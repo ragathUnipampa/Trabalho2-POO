@@ -28,6 +28,7 @@ import javax.swing.JTextField;
 public class TelaVeiculos extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final boolean permiteEdicao;
+    private final model.Cliente cliente;
     private final ButtonGroup grupoFiltro = new ButtonGroup();
     private final JToggleButton filtroTodos = criarOpcaoFiltro("Todos", "todos");
     private final JToggleButton filtroCarros = criarOpcaoFiltro("Carros", "carro");
@@ -38,7 +39,16 @@ public class TelaVeiculos extends JFrame {
     private JButton botaoSalvar;
 
     public TelaVeiculos(JFrame anterior, boolean permiteEdicao) {
+        this(anterior, permiteEdicao, null);
+    }
+
+    public TelaVeiculos(JFrame anterior, model.Cliente cliente) {
+        this(anterior, false, cliente);
+    }
+
+    private TelaVeiculos(JFrame anterior, boolean permiteEdicao, model.Cliente cliente) {
         this.permiteEdicao = permiteEdicao;
+        this.cliente = cliente;
         setTitle("Autobots");
         setSize(900, 620);
         setMinimumSize(new Dimension(700, 460));
@@ -285,6 +295,29 @@ public class TelaVeiculos extends JFrame {
             detalhes.add(criarDetalhe("Ano", ano));
             detalhes.add(criarDetalhe("Valor diario", valorDiario));
             painel.add(detalhes, BorderLayout.CENTER);
+
+            if (cliente != null) {
+                JPanel acao = new JPanel(new BorderLayout());
+                acao.setOpaque(false);
+                JLabel preco = new JLabel("R$ " + texto(veiculo.getValorDiario()) + " / dia");
+                preco.setFont(new Font("SansSerif", Font.BOLD, 16));
+                preco.setForeground(UiSupport.PRIMARIA_ESCURO);
+                acao.add(preco, BorderLayout.WEST);
+
+                JButton alugar = UiSupport.botaoPrimario(
+                        "disponivel".equalsIgnoreCase(texto(veiculo.getStatusVeiculo()))
+                                ? "Alugar este veiculo"
+                                : "Indisponivel");
+                boolean disponivel = "disponivel".equalsIgnoreCase(texto(veiculo.getStatusVeiculo()));
+                alugar.setEnabled(disponivel);
+                if (disponivel) {
+                    alugar.addActionListener(event -> new TelaLocacao(
+                            TelaVeiculos.this, cliente, veiculo.getPlaca()).setVisible(true));
+                }
+                acao.add(alugar, BorderLayout.EAST);
+                painel.add(acao, BorderLayout.SOUTH);
+            }
+
             setEdicaoAtiva(permiteEdicao);
         }
 

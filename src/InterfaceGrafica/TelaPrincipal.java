@@ -103,7 +103,7 @@ public class TelaPrincipal extends JFrame {
                             UiSupport.aviso(this, "CNH ou senha invalidas.");
                             return;
                         }
-                        abrir(new TelaCliente(cliente));
+                        abrir(new TelaVeiculos(this, cliente));
                     },
                     this::tratarFalhaDeAcesso,
                     comboPerfil, campoUsuario, campoSenha);
