@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.Window;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -156,36 +158,8 @@ public final class UiSupport {
         if (!botao.isEnabled()) {
             return;
         }
-        String textoOriginal = botao.getText();
-        botao.setEnabled(false);
-        botao.setText(textoDuranteExecucao);
-        for (JComponent controle : controles) {
-            controle.setEnabled(false);
-        }
-
-        new javax.swing.SwingWorker<T, Void>() {
-            @Override
-            protected T doInBackground() throws Exception {
-                return tarefa.call();
-            }
-
-            @Override
-            protected void done() {
-                botao.setEnabled(true);
-                botao.setText(textoOriginal);
-                for (JComponent controle : controles) {
-                    controle.setEnabled(true);
-                }
-                try {
-                    aoConcluir.accept(get());
-                } catch (InterruptedException erro) {
-                    Thread.currentThread().interrupt();
-                    aoFalhar.accept(erro);
-                } catch (ExecutionException erro) {
-                    aoFalhar.accept(erro.getCause());
-                }
-            }
-        }.execute();
+        executarEmSegundoPlano(
+                tarefa, aoConcluir, aoFalhar, botao, textoDuranteExecucao, controles);
     }
 
     static <T> void executarEmSegundoPlano(
@@ -193,10 +167,30 @@ public final class UiSupport {
             Consumer<T> aoConcluir,
             Consumer<Throwable> aoFalhar,
             JComponent... controles) {
+        executarEmSegundoPlano(tarefa, aoConcluir, aoFalhar, null, null, controles);
+    }
+
+    private static <T> void executarEmSegundoPlano(
+            Callable<T> tarefa,
+            Consumer<T> aoConcluir,
+            Consumer<Throwable> aoFalhar,
+            JButton botao,
+            String textoDuranteExecucao,
+            JComponent... controles) {
+        Map<JComponent, Boolean> estadosHabilitacao = new LinkedHashMap<>();
+        String textoOriginal = null;
+        if (botao != null) {
+            textoOriginal = botao.getText();
+            estadosHabilitacao.put(botao, botao.isEnabled());
+            botao.setEnabled(false);
+            botao.setText(textoDuranteExecucao);
+        }
         for (JComponent controle : controles) {
+            estadosHabilitacao.putIfAbsent(controle, controle.isEnabled());
             controle.setEnabled(false);
         }
 
+        String textoRestauracao = textoOriginal;
         new javax.swing.SwingWorker<T, Void>() {
             @Override
             protected T doInBackground() throws Exception {
@@ -205,8 +199,9 @@ public final class UiSupport {
 
             @Override
             protected void done() {
-                for (JComponent controle : controles) {
-                    controle.setEnabled(true);
+                estadosHabilitacao.forEach(JComponent::setEnabled);
+                if (botao != null) {
+                    botao.setText(textoRestauracao);
                 }
                 try {
                     aoConcluir.accept(get());
