@@ -1,5 +1,6 @@
 package InterfaceGrafica;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -23,40 +24,30 @@ import javax.swing.UIManager;
 import javax.swing.table.JTableHeader;
 
 public final class UiSupport {
-    static final Color FUNDO = new Color(244, 247, 244);
+    static final Color FUNDO = new Color(244, 247, 255);
     static final Color SUPERFICIE = Color.WHITE;
-    static final Color TEXTO = new Color(28, 48, 51);
-    static final Color TEXTO_SECUNDARIO = new Color(101, 119, 118);
-    static final Color PRIMARIA = new Color(22, 105, 94);
-    static final Color PRIMARIA_ESCURO = new Color(17, 77, 70);
-    static final Color DESTAQUE = new Color(224, 143, 79);
-    static final Color BORDA = new Color(220, 229, 223);
+    static final Color TEXTO = new Color(31, 44, 105);
+    static final Color TEXTO_SECUNDARIO = new Color(88, 105, 153);
+    static final Color PRIMARIA = new Color(45, 62, 139);
+    static final Color PRIMARIA_ESCURO = new Color(31, 44, 105);
+    static final Color DESTAQUE = new Color(126, 155, 215);
+    static final Color BORDA = new Color(219, 228, 246);
 
     private UiSupport() {
     }
 
     public static void aplicarTema() {
-        UIManager.put("control", FUNDO);
-        UIManager.put("info", SUPERFICIE);
-        UIManager.put("nimbusBase", PRIMARIA_ESCURO);
-        UIManager.put("nimbusBlueGrey", new Color(218, 228, 223));
-        UIManager.put("nimbusLightBackground", SUPERFICIE);
-        UIManager.put("nimbusOrange", DESTAQUE);
-        UIManager.put("text", TEXTO);
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception erro) {
-            throw new IllegalStateException("Nao foi possivel configurar o tema da interface.", erro);
+        if (!FlatLightLaf.setup()) {
+            throw new IllegalStateException("O FlatLaf nao conseguiu inicializar o tema claro.");
         }
 
         UIManager.put("defaultFont", new Font("SansSerif", Font.PLAIN, 14));
-        UIManager.put("Button.focus", new Color(224, 143, 79, 110));
-        UIManager.put("Component.focusWidth", 1);
+        UIManager.put("Component.accentColor", PRIMARIA);
+        UIManager.put("Component.focusColor", DESTAQUE);
+        UIManager.put("Component.borderColor", BORDA);
+        UIManager.put("Component.arc", 10);
+        UIManager.put("Button.arc", 12);
+        UIManager.put("TextComponent.arc", 8);
         UIManager.put("OptionPane.background", FUNDO);
         UIManager.put("Panel.background", FUNDO);
         UIManager.put("Label.foreground", TEXTO);
@@ -208,7 +199,7 @@ public final class UiSupport {
         tabela.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tabela.setForeground(TEXTO);
         tabela.setBackground(SUPERFICIE);
-        tabela.setSelectionBackground(new Color(220, 239, 231));
+        tabela.setSelectionBackground(new Color(225, 233, 250));
         tabela.setSelectionForeground(TEXTO);
         tabela.setRowHeight(32);
         tabela.setShowVerticalLines(false);
@@ -218,7 +209,7 @@ public final class UiSupport {
         JTableHeader cabecalho = tabela.getTableHeader();
         cabecalho.setFont(new Font("SansSerif", Font.BOLD, 12));
         cabecalho.setForeground(TEXTO);
-        cabecalho.setBackground(new Color(235, 241, 237));
+        cabecalho.setBackground(new Color(237, 242, 252));
         cabecalho.setPreferredSize(new Dimension(cabecalho.getPreferredSize().width, 36));
     }
 

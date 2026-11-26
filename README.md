@@ -21,6 +21,8 @@ O sistema permite:
 
 A aplicação é iniciada pela classe `Main`, que abre a `TelaPrincipal`.
 
+A interface gráfica utiliza o FlatLaf e a identidade visual Autobots, com paleta azul e branca, tipografia legível e componentes padronizados.
+
 ---
 
 ## 2. Tecnologias e estrutura utilizadas
@@ -29,6 +31,7 @@ O código presente no projeto utiliza:
 
 - **Java 21**;
 - **Java Swing** para a interface gráfica;
+- **FlatLaf 3.8** para o tema visual da interface;
 - **Gson 2.14.0** para serialização e desserialização JSON;
 - **HTTP Client do Java** (`java.net.http`) para comunicação com a API REST;
 - **Supabase** como serviço utilizado pelos repositórios para persistência dos dados;
@@ -59,15 +62,15 @@ src/
 1. **Java 11 ou superior**, pois o projeto utiliza recursos da API de comunicação HTTP disponíveis a partir do Java 11 para acesso ao banco de dados;
 2. uma IDE Java, como o IntelliJ IDEA, ou um ambiente capaz de compilar Java;
 3. acesso à configuração do Supabase utilizada pelo projeto;
-4. o arquivo `lib/gson-2.14.0.jar`, que já está presente no projeto.
+4. os arquivos `lib/gson-2.14.0.jar` e `lib/flatlaf-3.8.jar`, presentes no projeto.
 
-O projeto possui a biblioteca Gson 2.14.0 configurada no módulo `POO`.
+O projeto possui as bibliotecas Gson 2.14.0 e FlatLaf 3.8 configuradas no módulo `POO`.
 
 ### Execução pelo IntelliJ IDEA
 
 1. Abra a pasta `SistemaLocacaoVeiculos` no IntelliJ IDEA.
 2. Verifique se o projeto está utilizando **Java 11 ou superior**.
-3. Verifique se a biblioteca `lib/gson-2.14.0.jar` está disponível no projeto.
+3. Verifique se as bibliotecas `lib/gson-2.14.0.jar` e `lib/flatlaf-3.8.jar` estão disponíveis no projeto.
 4. Confira a classe `src/config/SupabaseConfig.java`.
 5. A configuração possui a URL do projeto Supabase e uma chave `ANON_KEY`. O próprio código informa que essa chave deve ser substituída pela chave pública/anon correspondente antes do commit final.
 6. Execute a classe:
@@ -83,20 +86,26 @@ A classe `Main` cria e exibe a `TelaPrincipal` por meio do `java.awt.EventQueue`
 A partir da pasta raiz do projeto, com o JDK 21 disponível:
 
 ```bash
-javac -cp lib/gson-2.14.0.jar -d out $(find src -name "*.java")
+javac -cp "lib/gson-2.14.0.jar:lib/flatlaf-3.8.jar" -d out $(find src -name "*.java")
 ```
 
 No Windows PowerShell, uma alternativa é utilizar:
 
 ```powershell
 $arquivos = Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName }
-javac -cp "lib/gson-2.14.0.jar" -d out $arquivos
+javac -cp "lib/gson-2.14.0.jar;lib/flatlaf-3.8.jar" -d out $arquivos
 ```
 
-Depois, execute:
+Execute no PowerShell:
+
+```powershell
+java -cp "out;lib/gson-2.14.0.jar;lib/flatlaf-3.8.jar" Main
+```
+
+Em sistemas Unix, execute:
 
 ```bash
-java -cp "out;lib/gson-2.14.0.jar" Main
+java -cp "out:lib/gson-2.14.0.jar:lib/flatlaf-3.8.jar" Main
 ```
 
 A aplicação depende do acesso ao Supabase para as operações realizadas pelos repositórios. O código do projeto utiliza os endpoints REST correspondentes a `cliente`, `gerente`, `veiculo` e `locacao`.
