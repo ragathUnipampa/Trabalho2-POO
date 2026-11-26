@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,15 +156,18 @@ public class TelaVeiculos extends JFrame {
     private void exibirVeiculos(List<model.Veiculo> veiculos) {
         listaVeiculos.removeAll();
         cartoes.clear();
+        List<model.Veiculo> veiculosOrdenados = new ArrayList<>(veiculos);
+        veiculosOrdenados.sort(Comparator.comparing(
+                veiculo -> !"disponivel".equalsIgnoreCase(veiculo.getStatusVeiculo())));
 
-        if (veiculos.isEmpty()) {
+        if (veiculosOrdenados.isEmpty()) {
             JLabel vazio = new JLabel("Nenhum veiculo encontrado para este filtro.");
             vazio.setForeground(UiSupport.TEXTO_SECUNDARIO);
             vazio.setFont(new Font("SansSerif", Font.PLAIN, 14));
             vazio.setBorder(BorderFactory.createEmptyBorder(22, 8, 22, 8));
             listaVeiculos.add(vazio);
         } else {
-            for (model.Veiculo veiculo : veiculos) {
+            for (model.Veiculo veiculo : veiculosOrdenados) {
                 CartaoVeiculo cartao = new CartaoVeiculo(veiculo);
                 cartoes.add(cartao);
                 listaVeiculos.add(cartao.painel);
