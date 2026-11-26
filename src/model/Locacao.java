@@ -5,6 +5,11 @@ import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Representa uma operação de aluguel (locação) de veículo realizada por um cliente.
+ * Vincula o cliente ao veículo locado, registrando o período de vigência,
+ * quantidade de diárias, valor total calculado e forma de pagamento utilizada.
+ */
 public class Locacao {
 
     private Long id;
@@ -33,6 +38,9 @@ public class Locacao {
     @SerializedName("veiculo_placa")
     private String veiculoPlaca;
 
+    /**
+     * Construtor padrão sem argumentos.
+     */
     public Locacao() {
     }
 
@@ -68,6 +76,12 @@ public class Locacao {
         this.dataInicio = dataInicio;
     }
 
+    /**
+     * Define a data de início da locação convertendo uma string no padrão ISO ({@code AAAA-MM-DD}).
+     *
+     * @param dataInicio A data inicial em formato textual, ou {@code null}/vazio para limpar o campo.
+     * @throws java.time.format.DateTimeParseException Se o texto não estiver em um formato de data válido.
+     */
     public void setDataInicio(String dataInicio) {
         this.dataInicio = dataInicio == null || dataInicio.isBlank() ? null : LocalDate.parse(dataInicio);
     }
@@ -80,6 +94,12 @@ public class Locacao {
         this.dataFim = dataFim;
     }
 
+    /**
+     * Define a data de término da locação convertendo uma string no padrão ISO ({@code AAAA-MM-DD}).
+     *
+     * @param dataFim A data final em formato textual, ou {@code null}/vazio para limpar o campo.
+     * @throws java.time.format.DateTimeParseException Se o texto não estiver em um formato de data válido.
+     */
     public void setDataFim(String dataFim) {
         this.dataFim = dataFim == null || dataFim.isBlank() ? null : LocalDate.parse(dataFim);
     }

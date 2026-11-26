@@ -3,6 +3,10 @@ package model;
 import com.google.gson.annotations.SerializedName;
 import enums.CategoriaCNH;
 
+/**
+ * Representa um cliente cadastrado no sistema de locação de veículos.
+ * Armazena dados pessoais, informações de habilitação (CNH) e credenciais de acesso.
+ */
 public class Cliente {
 
     private Long id;
@@ -23,10 +27,23 @@ public class Cliente {
     private String senhaCliente;
 
     // Construtor sem argumentos (obrigatório para o Gson)
+    /**
+     * Construtor padrão sem argumentos, utilizado para desserialização e instanciação vazia.
+     */
     public Cliente() {
     }
 
     // Construtor completo para criar instâncias facilmente
+    /**
+     * Constrói uma instância de cliente com todos os dados cadastrais obrigatórios.
+     *
+     * @param nome         O nome completo do cliente.
+     * @param telefone     O telefone de contato do cliente.
+     * @param cnh          O número de registro da Carteira Nacional de Habilitação.
+     * @param categoriaCnh A {@link CategoriaCNH} correspondente à habilitação do cliente.
+     * @param cep          O Código de Endereçamento Postal da residência do cliente.
+     * @param senhaCliente A senha de acesso do cliente ao sistema.
+     */
     public Cliente(String nome, String telefone, String cnh, CategoriaCNH categoriaCnh, String cep, String senhaCliente) {
         this.nome = nome;
         this.telefone = telefone;

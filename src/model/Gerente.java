@@ -2,6 +2,10 @@ package model;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Representa um administrador (gerente) da locadora de veículos.
+ * Possui credenciais para autenticação no painel administrativo e gerenciamento da frota.
+ */
 public class Gerente {
 
     private Long id;
@@ -15,11 +19,19 @@ public class Gerente {
     @SerializedName("senha_gerente")
     private String senhaGerente;
 
-
+    /**
+     * Construtor padrão sem argumentos, utilizado para desserialização e instanciação vazia.
+     */
     public Gerente() {
     }
 
-
+    /**
+     * Constrói uma instância de gerente com nome, e-mail institucional e senha de acesso.
+     *
+     * @param nome         O nome completo do gerente.
+     * @param email        O endereço de e-mail utilizado como login administrativo.
+     * @param senhaGerente A senha de acesso do gerente.
+     */
     public Gerente(String nome, String email, String senhaGerente) {
         this.nome = nome;
         this.email = email;
