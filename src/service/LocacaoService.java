@@ -17,15 +17,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementação concreta de {@link LocacaoServicePort} que orquestra as regras de negócio
+ * da locação de veículos, integrando validações de CNH, disponibilidade, pagamento e
+ * atualização de estado da frota.
+ */
 public class LocacaoService implements LocacaoServicePort {
     private final LocacaoRepositoryPort locacaoRepository;
     private final VeiculoRepositoryPort veiculoRepository;
     private final VeiculoServicePort veiculoService;
 
+    /**
+     * Constrói o serviço de locações com as implementações padrão de repositórios e serviço de veículos.
+     */
     public LocacaoService() {
         this(new LocacaoRepository(), new VeiculoRepository(), new VeiculoService());
     }
 
+    /**
+     * Constrói o serviço de locações recebendo suas dependências externamente (Injeção de Dependência).
+     *
+     * @param locacaoRepository O repositório para persistência de locações.
+     * @param veiculoRepository O repositório para atualização de status do veículo.
+     * @param veiculoService    O serviço para verificação de disponibilidade do veículo.
+     */
     public LocacaoService(
             LocacaoRepositoryPort locacaoRepository,
             VeiculoRepositoryPort veiculoRepository,
@@ -36,6 +51,10 @@ public class LocacaoService implements LocacaoServicePort {
         this.veiculoService = veiculoService;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Locacao realizarLocacao(Cliente cliente, Veiculo veiculo, Locacao locacao, FormaPagamento formaPagamento) throws LocacaoException {
         if (cliente == null || veiculo == null || locacao == null || formaPagamento == null) {
             throw new LocacaoException("Dados da locação inválidos, preencha corretamente!");
@@ -67,6 +86,10 @@ public class LocacaoService implements LocacaoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean podeAlugar(Cliente cliente, Veiculo veiculo) {
         if (cliente == null || veiculo == null) {
             return false;
@@ -80,6 +103,10 @@ public class LocacaoService implements LocacaoServicePort {
         return cliente.getCategoriaCnh().podeAlugar(tipo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Locacao> consultarLocacoesCliente(Long clienteId) throws LocacaoException {
         try {
             return locacaoRepository.buscarLocacoes(clienteId, null, null, null, null);
@@ -88,6 +115,10 @@ public class LocacaoService implements LocacaoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Locacao> consultarLocacoesVeiculo(String placa) throws LocacaoException {
         try {
             return locacaoRepository.buscarLocacoes(null, null, null, null, placa);

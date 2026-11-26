@@ -10,17 +10,33 @@ import repository.VeiculoRepositoryPort;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementação concreta de {@link VeiculoServicePort} que aplica validações de integridade,
+ * unicidade de placa e regras de consulta e atualização sobre a frota de veículos.
+ */
 public class VeiculoService implements VeiculoServicePort {
     private final VeiculoRepositoryPort veiculoRepository;
 
+    /**
+     * Constrói o serviço de veículos utilizando a implementação padrão de {@link VeiculoRepository}.
+     */
     public VeiculoService() {
         this(new VeiculoRepository());
     }
 
+    /**
+     * Constrói o serviço de veículos recebendo a porta do repositório por injeção de dependência.
+     *
+     * @param veiculoRepository A implementação de {@link VeiculoRepositoryPort} a ser utilizada.
+     */
     public VeiculoService(VeiculoRepositoryPort veiculoRepository) {
         this.veiculoRepository = veiculoRepository;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Veiculo> buscarVeiculos(String tipoVeiculo, String statusVeiculo) throws LocacaoException {
         try {
             return veiculoRepository.buscarVeiculos(tipoVeiculo, statusVeiculo, null, null, null);
@@ -29,6 +45,10 @@ public class VeiculoService implements VeiculoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Veiculo buscarVeiculo(String placa) throws LocacaoException {
         if (placa == null || placa.isBlank()) {
             throw new LocacaoException("Placa inválida para buscar.");
@@ -45,6 +65,10 @@ public class VeiculoService implements VeiculoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Veiculo cadastrarVeiculo(Veiculo veiculo) throws LocacaoException {
         validarVeiculo(veiculo);
 
@@ -59,6 +83,10 @@ public class VeiculoService implements VeiculoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Veiculo editarVeiculo(long id, Map<String, Object> dadosAtualizados) throws LocacaoException {
         if (dadosAtualizados == null || dadosAtualizados.isEmpty()) {
             throw new LocacaoException("Nenhuma alteração informada para o veículo.");
@@ -71,6 +99,10 @@ public class VeiculoService implements VeiculoServicePort {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean verificarDisponibilidade(String placa) throws LocacaoException {
         Veiculo veiculo = buscarVeiculo(placa);
         return veiculo != null && StatusVeiculo.DISPONIVEL.equals(veiculo.getStatusVeiculoEnum());
