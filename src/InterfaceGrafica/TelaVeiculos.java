@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -21,15 +22,19 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JTextField;
 
 public class TelaVeiculos extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final boolean permiteEdicao;
-    private final JComboBox<String> filtro = new JComboBox<>(new String[]{"todos", "carro", "moto"});
+    private final ButtonGroup grupoFiltro = new ButtonGroup();
+    private final JToggleButton filtroTodos = criarOpcaoFiltro("Todos", "todos");
+    private final JToggleButton filtroCarros = criarOpcaoFiltro("Carros", "carro");
+    private final JToggleButton filtroMotos = criarOpcaoFiltro("Motos", "moto");
     private final JPanel listaVeiculos = new JPanel();
     private final List<CartaoVeiculo> cartoes = new ArrayList<>();
-    private JButton botaoBuscar;
+    private final JLabel estadoLista = new JLabel(" ");
     private JButton botaoSalvar;
 
     public TelaVeiculos(JFrame anterior, boolean permiteEdicao) {
@@ -45,14 +50,20 @@ public class TelaVeiculos extends JFrame {
 
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         topo.setOpaque(false);
-        JLabel filtroLabel = new JLabel("Categoria");
-        filtroLabel.setLabelFor(filtro);
+        JLabel filtroLabel = new JLabel("Mostrar:");
+        filtroLabel.setLabelFor(filtroTodos);
+        JPanel opcoesFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        opcoesFiltro.setOpaque(false);
+        opcoesFiltro.add(filtroTodos);
+        opcoesFiltro.add(filtroCarros);
+        opcoesFiltro.add(filtroMotos);
         topo.add(filtroLabel);
-        UiSupport.estilizarCampo(filtro);
-        botaoBuscar = UiSupport.botaoSecundario("Atualizar lista");
-        botaoBuscar.addActionListener(event -> atualizarLista());
-        topo.add(filtro);
-        topo.add(botaoBuscar);
+        topo.add(opcoesFiltro);
+        estadoLista.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        estadoLista.setForeground(UiSupport.TEXTO_SECUNDARIO);
+        topo.add(estadoLista);
+        filtroTodos.setSelected(true);
+        atualizarEstiloFiltros();
 
         if (permiteEdicao) {
             botaoSalvar = UiSupport.botaoPrimario("Salvar alteracoes");
@@ -80,27 +91,28 @@ public class TelaVeiculos extends JFrame {
     }
 
     private void atualizarLista() {
-        String tipo = "todos".equals(filtro.getSelectedItem()) ? null : (String) filtro.getSelectedItem();
-        filtro.setEnabled(false);
+        String tipoSelecionado = grupoFiltro.getSelection().getActionCommand();
+        String tipo = "todos".equals(tipoSelecionado) ? null : tipoSelecionado;
         cartoes.forEach(cartao -> cartao.setEdicaoAtiva(false));
         if (botaoSalvar != null) {
             botaoSalvar.setEnabled(false);
         }
 
+        estadoLista.setText("Carregando veiculos...");
         UiSupport.executarEmSegundoPlano(
-                botaoBuscar,
-                "Carregando...",
                 () -> controller.buscarVeiculos(tipo, null),
                 veiculos -> {
-                    filtro.setEnabled(true);
                     exibirVeiculos(veiculos);
+                    estadoLista.setText(veiculos.size() + (veiculos.size() == 1
+                            ? " veiculo encontrado"
+                            : " veiculos encontrados"));
                     if (botaoSalvar != null) {
                         botaoSalvar.setEnabled(!cartoes.isEmpty());
                     }
                 },
                 erro -> {
-                    filtro.setEnabled(true);
                     cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
+                    estadoLista.setText("Nao foi possivel carregar os veiculos.");
                     if (botaoSalvar != null) {
                         botaoSalvar.setEnabled(!cartoes.isEmpty());
                     }
@@ -109,7 +121,10 @@ public class TelaVeiculos extends JFrame {
                     } else {
                         UiSupport.erro(this, "Nao foi possivel consultar os veiculos.", erro);
                     }
-                });
+                },
+                filtroTodos,
+                filtroCarros,
+                filtroMotos);
     }
 
     private void exibirVeiculos(List<model.Veiculo> veiculos) {
@@ -164,23 +179,51 @@ public class TelaVeiculos extends JFrame {
                 },
                 resultado -> {
                     cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
-                    botaoBuscar.setEnabled(true);
-                    filtro.setEnabled(true);
                     atualizarLista();
                     JOptionPane.showMessageDialog(this, "Alteracoes salvas com sucesso.");
                 },
                 erro -> {
                     cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
-                    botaoBuscar.setEnabled(true);
-                    filtro.setEnabled(true);
                     if (erro instanceof LocacaoException) {
                         UiSupport.aviso(this, erro.getMessage());
                     } else {
                         UiSupport.erro(this, "Nao foi possivel salvar as alteracoes.", erro);
                     }
                 },
-                botaoBuscar,
-                filtro);
+                filtroTodos,
+                filtroCarros,
+                filtroMotos);
+    }
+
+    private JToggleButton criarOpcaoFiltro(String texto, String tipo) {
+        JToggleButton opcao = new JToggleButton(texto);
+        opcao.setActionCommand(tipo);
+        opcao.setFont(new Font("SansSerif", Font.BOLD, 12));
+        opcao.setFocusPainted(false);
+        opcao.setOpaque(true);
+        opcao.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        opcao.addActionListener(event -> {
+            atualizarEstiloFiltros();
+            atualizarLista();
+        });
+        grupoFiltro.add(opcao);
+        return opcao;
+    }
+
+    private void atualizarEstiloFiltros() {
+        estilizarOpcaoFiltro(filtroTodos);
+        estilizarOpcaoFiltro(filtroCarros);
+        estilizarOpcaoFiltro(filtroMotos);
+    }
+
+    private void estilizarOpcaoFiltro(JToggleButton opcao) {
+        if (opcao.isSelected()) {
+            opcao.setBackground(UiSupport.PRIMARIA);
+            opcao.setForeground(java.awt.Color.WHITE);
+        } else {
+            opcao.setBackground(UiSupport.SUPERFICIE);
+            opcao.setForeground(UiSupport.PRIMARIA_ESCURO);
+        }
     }
 
     private final class CartaoVeiculo {

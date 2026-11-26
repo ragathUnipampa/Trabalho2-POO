@@ -187,6 +187,38 @@ public final class UiSupport {
         }.execute();
     }
 
+    static <T> void executarEmSegundoPlano(
+            Callable<T> tarefa,
+            Consumer<T> aoConcluir,
+            Consumer<Throwable> aoFalhar,
+            JComponent... controles) {
+        for (JComponent controle : controles) {
+            controle.setEnabled(false);
+        }
+
+        new javax.swing.SwingWorker<T, Void>() {
+            @Override
+            protected T doInBackground() throws Exception {
+                return tarefa.call();
+            }
+
+            @Override
+            protected void done() {
+                for (JComponent controle : controles) {
+                    controle.setEnabled(true);
+                }
+                try {
+                    aoConcluir.accept(get());
+                } catch (InterruptedException erro) {
+                    Thread.currentThread().interrupt();
+                    aoFalhar.accept(erro);
+                } catch (ExecutionException erro) {
+                    aoFalhar.accept(erro.getCause());
+                }
+            }
+        }.execute();
+    }
+
     private static JButton criarBotao(String texto) {
         JButton botao = new JButton(texto);
         botao.setFont(new Font("SansSerif", Font.BOLD, 13));
