@@ -4,62 +4,56 @@ import controller.SistemaController;
 import exception.LocacaoException;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 public class TelaVeiculos extends JFrame {
-    private static final int COLUNA_PLACA = 0;
-    private static final int COLUNA_TIPO = 1;
-    private static final int COLUNA_MARCA = 2;
-    private static final int COLUNA_MODELO = 3;
-    private static final int COLUNA_STATUS = 4;
-    private static final int COLUNA_VALOR_DIARIO = 5;
-
-
     private final SistemaController controller = new SistemaController();
-    private final DefaultTableModel modelo = new DefaultTableModel(
-            new Object[]{"Placa", "Tipo", "Marca", "Modelo", "Status", "Valor diario"}, 0);
-    private final JTable tabela = new JTable(modelo);
+    private final boolean permiteEdicao;
     private final JComboBox<String> filtro = new JComboBox<>(new String[]{"todos", "carro", "moto"});
-    private List<model.Veiculo> veiculosAtuais = new ArrayList<>();
+    private final JPanel listaVeiculos = new JPanel();
+    private final List<CartaoVeiculo> cartoes = new ArrayList<>();
     private JButton botaoBuscar;
     private JButton botaoSalvar;
 
     public TelaVeiculos(JFrame anterior, boolean permiteEdicao) {
+        this.permiteEdicao = permiteEdicao;
         setTitle("Autobots");
-        setSize(900, 560);
-        setMinimumSize(new Dimension(700, 440));
+        setSize(900, 620);
+        setMinimumSize(new Dimension(700, 460));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(anterior);
-        if (!permiteEdicao) {
-            tabela.setDefaultEditor(Object.class, null);
-        }
 
         JPanel conteudo = new JPanel(new BorderLayout(0, 14));
         conteudo.setOpaque(false);
 
-        JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         topo.setOpaque(false);
-        topo.add(new javax.swing.JLabel("Categoria"));
+        JLabel filtroLabel = new JLabel("Categoria");
+        filtroLabel.setLabelFor(filtro);
+        topo.add(filtroLabel);
         UiSupport.estilizarCampo(filtro);
         botaoBuscar = UiSupport.botaoSecundario("Atualizar lista");
-
-        botaoBuscar.addActionListener(event -> atualizarTabela());
-
+        botaoBuscar.addActionListener(event -> atualizarLista());
         topo.add(filtro);
         topo.add(botaoBuscar);
+
         if (permiteEdicao) {
             botaoSalvar = UiSupport.botaoPrimario("Salvar alteracoes");
             botaoSalvar.setEnabled(false);
@@ -70,37 +64,45 @@ public class TelaVeiculos extends JFrame {
         JPanel ferramentas = UiSupport.criarCartao(new BorderLayout());
         ferramentas.add(topo, BorderLayout.CENTER);
         conteudo.add(ferramentas, BorderLayout.NORTH);
-        conteudo.add(UiSupport.criarScrollTabela(tabela), BorderLayout.CENTER);
-        setContentPane(UiSupport.criarPagina(
-                "Veiculos da locadora.",
-                conteudo));
-        atualizarTabela();
+
+        listaVeiculos.setLayout(new javax.swing.BoxLayout(listaVeiculos, javax.swing.BoxLayout.Y_AXIS));
+        listaVeiculos.setBackground(UiSupport.FUNDO);
+        listaVeiculos.setBorder(BorderFactory.createEmptyBorder(2, 2, 8, 2));
+        JScrollPane rolagem = new JScrollPane(listaVeiculos);
+        rolagem.setBorder(BorderFactory.createEmptyBorder());
+        rolagem.getViewport().setBackground(UiSupport.FUNDO);
+        rolagem.getVerticalScrollBar().setUnitIncrement(18);
+        rolagem.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        conteudo.add(rolagem, BorderLayout.CENTER);
+
+        setContentPane(UiSupport.criarPagina("Veiculos da locadora.", conteudo));
+        atualizarLista();
     }
 
-    private void atualizarTabela() {
+    private void atualizarLista() {
         String tipo = "todos".equals(filtro.getSelectedItem()) ? null : (String) filtro.getSelectedItem();
         filtro.setEnabled(false);
-        tabela.setEnabled(false);
+        cartoes.forEach(cartao -> cartao.setEdicaoAtiva(false));
         if (botaoSalvar != null) {
             botaoSalvar.setEnabled(false);
         }
+
         UiSupport.executarEmSegundoPlano(
                 botaoBuscar,
                 "Carregando...",
                 () -> controller.buscarVeiculos(tipo, null),
                 veiculos -> {
                     filtro.setEnabled(true);
-                    tabela.setEnabled(true);
                     exibirVeiculos(veiculos);
                     if (botaoSalvar != null) {
-                        botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                        botaoSalvar.setEnabled(!cartoes.isEmpty());
                     }
                 },
                 erro -> {
                     filtro.setEnabled(true);
-                    tabela.setEnabled(true);
+                    cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
                     if (botaoSalvar != null) {
-                        botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                        botaoSalvar.setEnabled(!cartoes.isEmpty());
                     }
                     if (erro instanceof LocacaoException) {
                         UiSupport.aviso(this, erro.getMessage());
@@ -111,87 +113,64 @@ public class TelaVeiculos extends JFrame {
     }
 
     private void exibirVeiculos(List<model.Veiculo> veiculos) {
-        veiculosAtuais = veiculos;
-        modelo.setRowCount(0);
-        for (model.Veiculo veiculo : veiculosAtuais) {
-            modelo.addRow(new Object[]{
-                    veiculo.getPlaca(),
-                    veiculo.getTipoVeiculo(),
-                    veiculo.getMarca(),
-                    veiculo.getModelo(),
-                    veiculo.getStatusVeiculo(),
-                    veiculo.getValorDiario()
-            });
+        listaVeiculos.removeAll();
+        cartoes.clear();
+
+        if (veiculos.isEmpty()) {
+            JLabel vazio = new JLabel("Nenhum veiculo encontrado para este filtro.");
+            vazio.setForeground(UiSupport.TEXTO_SECUNDARIO);
+            vazio.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            vazio.setBorder(BorderFactory.createEmptyBorder(22, 8, 22, 8));
+            listaVeiculos.add(vazio);
+        } else {
+            for (model.Veiculo veiculo : veiculos) {
+                CartaoVeiculo cartao = new CartaoVeiculo(veiculo);
+                cartoes.add(cartao);
+                listaVeiculos.add(cartao.painel);
+                listaVeiculos.add(javax.swing.Box.createVerticalStrut(12));
+            }
         }
+
+        listaVeiculos.revalidate();
+        listaVeiculos.repaint();
     }
 
     private void salvarAlteracoes() {
-        if (botaoSalvar == null) {
+        if (!permiteEdicao || botaoSalvar == null) {
             return;
         }
-        if (tabela.isEditing()) {
-            tabela.getCellEditor().stopCellEditing();
-        }
 
-        List<Map<String, Object>> alteracoesPorLinha = new ArrayList<>();
+        List<Map<String, Object>> alteracoesPorVeiculo = new ArrayList<>();
         try {
-            for (int linha = 0; linha < modelo.getRowCount(); linha++) {
-                String placa = valorDaCelula(linha, COLUNA_PLACA);
-                String tipo = valorDaCelula(linha, COLUNA_TIPO).toLowerCase();
-                String marca = valorDaCelula(linha, COLUNA_MARCA);
-                String nomeModelo = valorDaCelula(linha, COLUNA_MODELO);
-                String status = valorDaCelula(linha, COLUNA_STATUS).toLowerCase();
-                BigDecimal valorDiario = new BigDecimal(valorDaCelula(linha, COLUNA_VALOR_DIARIO).replace(",", "."));
-
-                if (placa.isEmpty()) {
-                    throw new IllegalArgumentException("A placa nao pode ficar vazia.");
-                }
-                if (!"carro".equals(tipo) && !"moto".equals(tipo)) {
-                    throw new IllegalArgumentException("O tipo deve ser carro ou moto.");
-                }
-                if (!"disponivel".equals(status) && !"indisponivel".equals(status)) {
-                    throw new IllegalArgumentException("O status deve ser disponivel ou indisponivel.");
-                }
-                if (valorDiario.compareTo(BigDecimal.ZERO) < 0) {
-                    throw new IllegalArgumentException("O valor diario nao pode ser negativo.");
-                }
-
-                Map<String, Object> alteracoes = new HashMap<>();
-                alteracoes.put("placa", placa);
-                alteracoes.put("tipo_veiculo", tipo);
-                alteracoes.put("marca", marca);
-                alteracoes.put("modelo", nomeModelo);
-                alteracoes.put("statusVeiculo", status);
-                alteracoes.put("valor_diario", valorDiario);
-                alteracoesPorLinha.add(alteracoes);
+            for (CartaoVeiculo cartao : cartoes) {
+                alteracoesPorVeiculo.add(cartao.obterAlteracoes());
             }
-
         } catch (IllegalArgumentException erro) {
             UiSupport.aviso(this, erro.getMessage());
             return;
         }
 
-        tabela.setEnabled(false);
-        botaoBuscar.setEnabled(false);
-        filtro.setEnabled(false);
+        cartoes.forEach(cartao -> cartao.setEdicaoAtiva(false));
         UiSupport.executarEmSegundoPlano(
                 botaoSalvar,
                 "Salvando...",
                 () -> {
-                    for (int linha = 0; linha < veiculosAtuais.size(); linha++) {
-                        controller.editarVeiculo(veiculosAtuais.get(linha).getId(), alteracoesPorLinha.get(linha));
+                    for (int indice = 0; indice < cartoes.size(); indice++) {
+                        controller.editarVeiculo(
+                                cartoes.get(indice).veiculo.getId(),
+                                alteracoesPorVeiculo.get(indice));
                     }
                     return null;
                 },
                 resultado -> {
-                    tabela.setEnabled(true);
+                    cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
                     botaoBuscar.setEnabled(true);
                     filtro.setEnabled(true);
-                    atualizarTabela();
+                    atualizarLista();
                     JOptionPane.showMessageDialog(this, "Alteracoes salvas com sucesso.");
                 },
                 erro -> {
-                    tabela.setEnabled(true);
+                    cartoes.forEach(cartao -> cartao.setEdicaoAtiva(true));
                     botaoBuscar.setEnabled(true);
                     filtro.setEnabled(true);
                     if (erro instanceof LocacaoException) {
@@ -199,11 +178,150 @@ public class TelaVeiculos extends JFrame {
                     } else {
                         UiSupport.erro(this, "Nao foi possivel salvar as alteracoes.", erro);
                     }
-                });
+                },
+                botaoBuscar,
+                filtro);
     }
 
-    private String valorDaCelula(int linha, int coluna) {
-        Object valor = modelo.getValueAt(linha, coluna);
-        return valor == null ? "" : valor.toString().trim();
+    private final class CartaoVeiculo {
+        private final model.Veiculo veiculo;
+        private final JPanel painel;
+        private final JTextField placa;
+        private final JComboBox<String> tipo;
+        private final JTextField marca;
+        private final JTextField modelo;
+        private final JTextField ano;
+        private final JComboBox<String> status;
+        private final JTextField valorDiario;
+        private final List<java.awt.Component> camposEditaveis = new ArrayList<>();
+
+        private CartaoVeiculo(model.Veiculo veiculo) {
+            this.veiculo = veiculo;
+            painel = UiSupport.criarCartao(new BorderLayout(0, 15));
+            painel.setAlignmentX(LEFT_ALIGNMENT);
+
+            JPanel cabecalho = new JPanel(new BorderLayout(12, 0));
+            cabecalho.setOpaque(false);
+            JPanel identidade = new JPanel(new BorderLayout(0, 4));
+            identidade.setOpaque(false);
+            JLabel titulo = new JLabel(texto(veiculo.getMarca()) + " " + texto(veiculo.getModelo()));
+            titulo.setFont(new Font("SansSerif", Font.BOLD, 19));
+            titulo.setForeground(UiSupport.TEXTO);
+            JLabel subtitulo = new JLabel(texto(veiculo.getTipoVeiculo()).toUpperCase()
+                    + "  /  ANO " + texto(veiculo.getAno()));
+            subtitulo.setFont(new Font("SansSerif", Font.BOLD, 10));
+            subtitulo.setForeground(UiSupport.TEXTO_SECUNDARIO);
+            identidade.add(titulo, BorderLayout.CENTER);
+            identidade.add(subtitulo, BorderLayout.SOUTH);
+            cabecalho.add(identidade, BorderLayout.CENTER);
+
+            JLabel etiquetaStatus = new JLabel(texto(veiculo.getStatusVeiculo()).toUpperCase());
+            etiquetaStatus.setFont(new Font("SansSerif", Font.BOLD, 10));
+            etiquetaStatus.setForeground(UiSupport.PRIMARIA_ESCURO);
+            etiquetaStatus.setOpaque(true);
+            etiquetaStatus.setBackground(new java.awt.Color(232, 238, 251));
+            etiquetaStatus.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
+            cabecalho.add(etiquetaStatus, BorderLayout.EAST);
+            painel.add(cabecalho, BorderLayout.NORTH);
+
+            JPanel detalhes = new JPanel(new GridLayout(0, 3, 12, 12));
+            detalhes.setOpaque(false);
+            placa = campoTexto(veiculo.getPlaca());
+            tipo = campoOpcao(new String[]{"carro", "moto"}, veiculo.getTipoVeiculo());
+            marca = campoTexto(veiculo.getMarca());
+            modelo = campoTexto(veiculo.getModelo());
+            ano = campoTexto(veiculo.getAno());
+            status = campoOpcao(new String[]{"disponivel", "indisponivel"}, veiculo.getStatusVeiculo());
+            valorDiario = campoTexto(veiculo.getValorDiario());
+
+            detalhes.add(criarDetalhe("Placa", placa));
+            detalhes.add(criarDetalhe("Tipo", tipo));
+            detalhes.add(criarDetalhe("Status", status));
+            detalhes.add(criarDetalhe("Marca", marca));
+            detalhes.add(criarDetalhe("Modelo", modelo));
+            detalhes.add(criarDetalhe("Ano", ano));
+            detalhes.add(criarDetalhe("Valor diario", valorDiario));
+            painel.add(detalhes, BorderLayout.CENTER);
+            setEdicaoAtiva(permiteEdicao);
+        }
+
+        private JTextField campoTexto(Object valor) {
+            JTextField campo = new JTextField(texto(valor));
+            UiSupport.estilizarCampo(campo);
+            camposEditaveis.add(campo);
+            return campo;
+        }
+
+        private JComboBox<String> campoOpcao(String[] opcoes, String selecionado) {
+            JComboBox<String> campo = new JComboBox<>(opcoes);
+            campo.setSelectedItem(selecionado);
+            UiSupport.estilizarCampo(campo);
+            camposEditaveis.add(campo);
+            return campo;
+        }
+
+        private JPanel criarDetalhe(String rotulo, javax.swing.JComponent campo) {
+            if (permiteEdicao) {
+                return UiSupport.criarCampo(rotulo, campo);
+            }
+
+            JPanel grupo = new JPanel(new BorderLayout(0, 7));
+            grupo.setOpaque(false);
+            JLabel label = new JLabel(rotulo);
+            label.setFont(new Font("SansSerif", Font.BOLD, 12));
+            label.setForeground(UiSupport.TEXTO_SECUNDARIO);
+            grupo.add(label, BorderLayout.NORTH);
+
+            JLabel valor = new JLabel(campo instanceof JComboBox
+                    ? texto(((JComboBox<?>) campo).getSelectedItem())
+                    : ((JTextField) campo).getText());
+            valor.setFont(new Font("SansSerif", Font.BOLD, 14));
+            valor.setForeground(UiSupport.TEXTO);
+            valor.setOpaque(true);
+            valor.setBackground(new java.awt.Color(247, 249, 255));
+            valor.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(UiSupport.BORDA),
+                    BorderFactory.createEmptyBorder(9, 10, 9, 10)));
+            grupo.add(valor, BorderLayout.CENTER);
+            return grupo;
+        }
+
+        private Map<String, Object> obterAlteracoes() {
+            String placaInformada = placa.getText().trim();
+            String tipoInformado = texto(tipo.getSelectedItem()).toLowerCase();
+            String marcaInformada = marca.getText().trim();
+            String modeloInformado = modelo.getText().trim();
+            String statusInformado = texto(status.getSelectedItem()).toLowerCase();
+            int anoInformado = Integer.parseInt(ano.getText().trim());
+            BigDecimal valorInformado = new BigDecimal(valorDiario.getText().trim().replace(",", "."));
+
+            if (placaInformada.isEmpty() || marcaInformada.isEmpty() || modeloInformado.isEmpty()) {
+                throw new IllegalArgumentException("Placa, marca e modelo sao obrigatorios.");
+            }
+            if (anoInformado <= 0) {
+                throw new IllegalArgumentException("O ano deve ser maior que zero.");
+            }
+            if (valorInformado.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("O valor diario nao pode ser negativo.");
+            }
+
+            Map<String, Object> alteracoes = new HashMap<>();
+            alteracoes.put("placa", placaInformada);
+            alteracoes.put("tipo_veiculo", tipoInformado);
+            alteracoes.put("marca", marcaInformada);
+            alteracoes.put("modelo", modeloInformado);
+            alteracoes.put("ano", anoInformado);
+            alteracoes.put("statusVeiculo", statusInformado);
+            alteracoes.put("valor_diario", valorInformado);
+            return alteracoes;
+        }
+
+        private void setEdicaoAtiva(boolean ativa) {
+            camposEditaveis.forEach(campo -> campo.setEnabled(ativa));
+        }
+
+        private String texto(Object valor) {
+            return valor == null ? "" : valor.toString();
+        }
     }
 }
