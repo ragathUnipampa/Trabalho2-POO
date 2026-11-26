@@ -15,6 +15,8 @@ public class TelaPrincipal extends JFrame {
     private final JComboBox<String> comboPerfil = new JComboBox<>(new String[]{"Cliente", "Gerente"});
     private final JLabel labelUsuario = new JLabel("CNH:");
     private JButton botaoEntrar;
+    private JButton botaoCadastro;
+    private JPanel botoes;
 
     public TelaPrincipal() {
         setTitle("Autobots");
@@ -27,8 +29,9 @@ public class TelaPrincipal extends JFrame {
     }
 
     private void configurarSelecaoDePerfil() {
-        comboPerfil.addActionListener(event -> atualizarLabelUsuario());
+        comboPerfil.addActionListener(event -> atualizarPerfil());
         atualizarLabelUsuario();
+        atualizarVisibilidadeCadastro();
     }
 
     private JPanel criarPainel() {
@@ -43,16 +46,16 @@ public class TelaPrincipal extends JFrame {
         formulario.add(UiSupport.criarCampo("Senha", campoSenha));
         cartao.add(formulario, BorderLayout.CENTER);
 
-        JPanel botoes = new JPanel(new GridLayout(1, 2, 10, 0));
+        botoes = new JPanel(new GridLayout(1, 2, 10, 0));
         botoes.setOpaque(false);
         botaoEntrar = UiSupport.botaoPrimario("Entrar");
-        JButton cadastrar = UiSupport.botaoSecundario("Criar cadastro");
+        botaoCadastro = UiSupport.botaoSecundario("Criar cadastro");
         botaoEntrar.addActionListener(event -> entrar());
         campoUsuario.addActionListener(event -> entrar());
         campoSenha.addActionListener(event -> entrar());
-        cadastrar.addActionListener(event -> abrir(new TelaCadastroCliente()));
+        botaoCadastro.addActionListener(event -> abrir(new TelaCadastroCliente()));
         botoes.add(botaoEntrar);
-        botoes.add(cadastrar);
+        botoes.add(botaoCadastro);
         cartao.add(botoes, BorderLayout.SOUTH);
         getRootPane().setDefaultButton(botaoEntrar);
         JPanel conteudo = new JPanel(new BorderLayout());
@@ -65,6 +68,23 @@ public class TelaPrincipal extends JFrame {
 
     private void atualizarLabelUsuario() {
         labelUsuario.setText("Gerente".equals(comboPerfil.getSelectedItem()) ? "E-mail:" : "CNH:");
+    }
+
+    private void atualizarPerfil() {
+        atualizarLabelUsuario();
+        atualizarVisibilidadeCadastro();
+    }
+
+    private void atualizarVisibilidadeCadastro() {
+        boolean clienteSelecionado = "Cliente".equals(comboPerfil.getSelectedItem());
+        if (clienteSelecionado && botaoCadastro.getParent() == null) {
+            botoes.add(botaoCadastro);
+        } else if (!clienteSelecionado && botaoCadastro.getParent() == botoes) {
+            botoes.remove(botaoCadastro);
+        }
+        botoes.setLayout(new GridLayout(1, clienteSelecionado ? 2 : 1, 10, 0));
+        botoes.revalidate();
+        botoes.repaint();
     }
 
     private boolean camposDeAcessoEstaoVazios(String usuario, String senha) {
