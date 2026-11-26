@@ -36,7 +36,7 @@ public class TelaCliente extends JFrame {
         JButton veiculos = UiSupport.botaoSecundario("Ver veiculos");
         JButton locacao = UiSupport.botaoPrimario("Alugar veiculo");
         JButton sair = UiSupport.botaoSecundario("Sair");
-        veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
+        veiculos.addActionListener(event -> new TelaVeiculos(this, false).setVisible(true));
         locacao.addActionListener(event -> new TelaLocacao(this, cliente).setVisible(true));
         sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
         menu.add(veiculos);

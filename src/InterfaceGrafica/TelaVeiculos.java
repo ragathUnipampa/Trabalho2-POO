@@ -37,12 +37,15 @@ public class TelaVeiculos extends JFrame {
     private JButton botaoBuscar;
     private JButton botaoSalvar;
 
-    public TelaVeiculos(JFrame anterior) {
+    public TelaVeiculos(JFrame anterior, boolean permiteEdicao) {
         setTitle("Autobots");
         setSize(900, 560);
         setMinimumSize(new Dimension(700, 440));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(anterior);
+        if (!permiteEdicao) {
+            tabela.setDefaultEditor(Object.class, null);
+        }
 
         JPanel conteudo = new JPanel(new BorderLayout(0, 14));
         conteudo.setOpaque(false);
@@ -52,15 +55,17 @@ public class TelaVeiculos extends JFrame {
         topo.add(new javax.swing.JLabel("Categoria"));
         UiSupport.estilizarCampo(filtro);
         botaoBuscar = UiSupport.botaoSecundario("Atualizar lista");
-        botaoSalvar = UiSupport.botaoPrimario("Salvar alteracoes");
-        botaoSalvar.setEnabled(false);
 
         botaoBuscar.addActionListener(event -> atualizarTabela());
-        botaoSalvar.addActionListener(event -> salvarAlteracoes());
 
         topo.add(filtro);
         topo.add(botaoBuscar);
-        topo.add(botaoSalvar);
+        if (permiteEdicao) {
+            botaoSalvar = UiSupport.botaoPrimario("Salvar alteracoes");
+            botaoSalvar.setEnabled(false);
+            botaoSalvar.addActionListener(event -> salvarAlteracoes());
+            topo.add(botaoSalvar);
+        }
 
         JPanel ferramentas = UiSupport.criarCartao(new BorderLayout());
         ferramentas.add(topo, BorderLayout.CENTER);
@@ -76,7 +81,9 @@ public class TelaVeiculos extends JFrame {
         String tipo = "todos".equals(filtro.getSelectedItem()) ? null : (String) filtro.getSelectedItem();
         filtro.setEnabled(false);
         tabela.setEnabled(false);
-        botaoSalvar.setEnabled(false);
+        if (botaoSalvar != null) {
+            botaoSalvar.setEnabled(false);
+        }
         UiSupport.executarEmSegundoPlano(
                 botaoBuscar,
                 "Carregando...",
@@ -85,12 +92,16 @@ public class TelaVeiculos extends JFrame {
                     filtro.setEnabled(true);
                     tabela.setEnabled(true);
                     exibirVeiculos(veiculos);
-                    botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                    if (botaoSalvar != null) {
+                        botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                    }
                 },
                 erro -> {
                     filtro.setEnabled(true);
                     tabela.setEnabled(true);
-                    botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                    if (botaoSalvar != null) {
+                        botaoSalvar.setEnabled(!veiculosAtuais.isEmpty());
+                    }
                     if (erro instanceof LocacaoException) {
                         UiSupport.aviso(this, erro.getMessage());
                     } else {
@@ -115,6 +126,9 @@ public class TelaVeiculos extends JFrame {
     }
 
     private void salvarAlteracoes() {
+        if (botaoSalvar == null) {
+            return;
+        }
         if (tabela.isEditing()) {
             tabela.getCellEditor().stopCellEditing();
         }

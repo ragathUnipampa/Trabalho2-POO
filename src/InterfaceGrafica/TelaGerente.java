@@ -46,7 +46,7 @@ public class TelaGerente extends JFrame {
         JButton sair = UiSupport.botaoSecundario("Sair");
 
         clientes.addActionListener(event -> mostrarClientes(clientes));
-        veiculos.addActionListener(event -> new TelaVeiculos(this).setVisible(true));
+        veiculos.addActionListener(event -> new TelaVeiculos(this, true).setVisible(true));
         cadastrar.addActionListener(event -> cadastrarVeiculo(cadastrar));
         sair.addActionListener(event -> { dispose(); new TelaPrincipal().setVisible(true); });
         menu.add(clientes);
