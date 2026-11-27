@@ -5,63 +5,64 @@ import exception.LocacaoException;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import javax.swing.BorderFactory;
+import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-/**
- * Tela dedicada à autenticação de gerentes por meio de e-mail e senha.
- * Em caso de sucesso na validação das credenciais, redireciona o usuário
- * para o painel administrativo ({@link TelaGerente}).
- */
 public class TelaLoginGerente extends JFrame {
     private final SistemaController controller = new SistemaController();
-    private final JTextField email = new JTextField();
-    private final JPasswordField senha = new JPasswordField();
-
-    /**
-     * Constrói e exibe a janela de login específica para o perfil de gerente.
-     */
+    private final JTextField email = new JTextField(); private final JPasswordField senha = new JPasswordField();
+    private JButton botaoEntrar;
     public TelaLoginGerente() {
-        setTitle("Login do gerente");
-        setSize(420, 250);
+        setTitle("Autobots");
+        setSize(540, 430);
+        setMinimumSize(new Dimension(480, 390));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        JPanel painel = new JPanel(new BorderLayout(10, 10));
-        painel.setBorder(BorderFactory.createEmptyBorder(18, 24, 18, 24));
-        JPanel campos = new JPanel(new GridLayout(2, 2, 8, 8));
-        campos.add(new JLabel("E-mail:"));
-        campos.add(email);
-        campos.add(new JLabel("Senha:"));
-        campos.add(senha);
-        painel.add(campos, BorderLayout.CENTER);
-        JButton entrar = new JButton("Entrar");
-        entrar.addActionListener(event -> entrar());
-        painel.add(entrar, BorderLayout.SOUTH);
-        setContentPane(painel);
+        JPanel cartao = UiSupport.criarCartao(new BorderLayout(0, 18));
+        JPanel campos = new JPanel(new GridLayout(0, 1, 0, 14));
+        campos.setOpaque(false);
+        campos.add(UiSupport.criarCampo("E-mail", email));
+        campos.add(UiSupport.criarCampo("Senha", senha));
+        cartao.add(campos, BorderLayout.CENTER);
+        botaoEntrar = UiSupport.botaoPrimario("Entrar no painel");
+        botaoEntrar.addActionListener(event -> entrar());
+        senha.addActionListener(event -> entrar());
+        cartao.add(botaoEntrar, BorderLayout.SOUTH);
+        getRootPane().setDefaultButton(botaoEntrar);
+        JPanel conteudo = new JPanel(new BorderLayout());
+        conteudo.setOpaque(false);
+        conteudo.add(cartao, BorderLayout.NORTH);
+        setContentPane(UiSupport.criarPagina(
+                "Bem-vindo de volta.",
+                conteudo));
     }
-
     private void entrar() {
-        if (email.getText().trim().isEmpty() || senha.getPassword().length == 0) {
-            UiSupport.aviso(this, "Informe e-mail e senha.");
-            return;
-        }
-        try {
-            model.Gerente gerente = controller.autenticarGerente(email.getText().trim(), new String(senha.getPassword()));
-            if (gerente == null) {
-                UiSupport.aviso(this, "Email ou senha invalidos.");
-                return;
-            }
-            new TelaGerente(gerente).setVisible(true);
-            dispose();
-        } catch (LocacaoException erro) {
-            UiSupport.aviso(this, erro.getMessage());
-        } catch (RuntimeException erro) {
-            UiSupport.erro(this, "Nao foi possivel acessar o banco de dados.", erro);
-        }
+        if (email.getText().trim().isEmpty() || senha.getPassword().length == 0) { UiSupport.aviso(this, "Informe e-mail e senha."); return; }
+        String emailInformado = email.getText().trim();
+        String senhaInformada = new String(senha.getPassword());
+        UiSupport.executarEmSegundoPlano(
+                botaoEntrar,
+                "Validando...",
+                () -> controller.autenticarGerente(emailInformado, senhaInformada),
+                gerente -> {
+                    if (gerente == null) {
+                        UiSupport.aviso(this, "Email ou senha invalidos.");
+                        return;
+                    }
+                    new TelaGerente(gerente).setVisible(true);
+                    dispose();
+                },
+                erro -> {
+                    if (erro instanceof LocacaoException) {
+                        UiSupport.aviso(this, erro.getMessage());
+                    } else {
+                        UiSupport.erro(this, "Nao foi possivel acessar o banco de dados.", erro);
+                    }
+                },
+                email, senha);
     }
 }

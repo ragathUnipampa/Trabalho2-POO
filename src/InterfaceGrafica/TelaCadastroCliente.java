@@ -20,46 +20,49 @@ public class TelaCadastroCliente extends JFrame {
     private final JComboBox<String> categoria = new JComboBox<>(new String[]{"A", "B", "AB"});
     private final JTextField cep = new JTextField();
     private final JPasswordField senha = new JPasswordField();
+    private JButton botaoSalvar;
 
     /**
      * Constrói e exibe a janela de cadastro de clientes com seus respectivos
      * campos de entrada e botões de ação.
      */
     public TelaCadastroCliente() {
-        setTitle("Cadastro de cliente");
-        setSize(500, 390);
+        setTitle("Autobots");
+        setSize(650, 600);
+        setMinimumSize(new Dimension(560, 540));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         construirTela();
     }
 
     private void construirTela() {
-        JPanel painel = new JPanel(new BorderLayout(10, 10));
-        painel.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-        JPanel campos = new JPanel(new GridLayout(6, 2, 8, 8));
-        campos.add(new JLabel("Nome:"));
-        campos.add(nome);
-        campos.add(new JLabel("Telefone:"));
-        campos.add(telefone);
-        campos.add(new JLabel("CNH:"));
-        campos.add(cnh);
-        campos.add(new JLabel("Categoria CNH:"));
-        campos.add(categoria);
-        campos.add(new JLabel("CEP:"));
-        campos.add(cep);
-        campos.add(new JLabel("Senha:"));
-        campos.add(senha);
-        painel.add(campos, BorderLayout.CENTER);
+        JPanel cartao = UiSupport.criarCartao(new BorderLayout(0, 18));
+        JPanel campos = new JPanel(new GridLayout(0, 2, 14, 14));
+        campos.setOpaque(false);
+        campos.add(UiSupport.criarCampo("Nome completo", nome));
+        campos.add(UiSupport.criarCampo("Telefone", telefone));
+        campos.add(UiSupport.criarCampo("CNH", cnh));
+        campos.add(UiSupport.criarCampo("Categoria CNH", categoria));
+        campos.add(UiSupport.criarCampo("CEP", cep));
+        campos.add(UiSupport.criarCampo("Senha", senha));
+        cartao.add(campos, BorderLayout.CENTER);
 
-        JPanel botoes = new JPanel(new GridLayout(1, 2, 8, 8));
-        JButton salvar = new JButton("Cadastrar");
-        JButton voltar = new JButton("Voltar");
-        salvar.addActionListener(event -> salvar());
+        JPanel botoes = new JPanel(new GridLayout(1, 2, 10, 0));
+        botoes.setOpaque(false);
+        botaoSalvar = UiSupport.botaoPrimario("Criar cadastro");
+        JButton voltar = UiSupport.botaoSecundario("Voltar");
+        botaoSalvar.addActionListener(event -> salvar());
         voltar.addActionListener(event -> dispose());
-        botoes.add(salvar);
+        botoes.add(botaoSalvar);
         botoes.add(voltar);
-        painel.add(botoes, BorderLayout.SOUTH);
-        setContentPane(painel);
+        cartao.add(botoes, BorderLayout.SOUTH);
+        getRootPane().setDefaultButton(botaoSalvar);
+        JPanel conteudo = new JPanel(new BorderLayout());
+        conteudo.setOpaque(false);
+        conteudo.add(cartao, BorderLayout.NORTH);
+        setContentPane(UiSupport.criarPagina(
+                "Vamos preparar seu acesso.",
+                conteudo));
     }
 
     private model.Cliente criarClienteDoFormulario() {
@@ -81,14 +84,24 @@ public class TelaCadastroCliente extends JFrame {
 
         model.Cliente cliente = criarClienteDoFormulario();
 
-        try {
-            controller.cadastrarCliente(cliente);
-            JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso.");
-            dispose();
-        } catch (LocacaoException erro) {
-            UiSupport.aviso(this, erro.getMessage());
-        } catch (RuntimeException erro) {
-            UiSupport.erro(this, "Nao foi possivel cadastrar o cliente.", erro);
-        }
+        UiSupport.executarEmSegundoPlano(
+                botaoSalvar,
+                "Cadastrando...",
+                () -> {
+                    controller.cadastrarCliente(cliente);
+                    return null;
+                },
+                resultado -> {
+                    JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso.");
+                    dispose();
+                },
+                erro -> {
+                    if (erro instanceof LocacaoException) {
+                        UiSupport.aviso(this, erro.getMessage());
+                    } else {
+                        UiSupport.erro(this, "Nao foi possivel cadastrar o cliente.", erro);
+                    }
+                },
+                nome, telefone, cnh, categoria, cep, senha);
     }
 }
