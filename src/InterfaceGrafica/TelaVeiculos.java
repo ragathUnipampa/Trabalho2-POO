@@ -129,9 +129,7 @@ public class TelaVeiculos extends JFrame {
                 () -> controller.buscarVeiculos(tipo, null),
                 veiculos -> {
                     exibirVeiculos(veiculos);
-                    estadoLista.setText(veiculos.size() + (veiculos.size() == 1
-                            ? " veiculo encontrado"
-                            : " veiculos encontrados"));
+                    estadoLista.setText(" ");
                     if (botaoSalvar != null) {
                         botaoSalvar.setEnabled(!cartoes.isEmpty());
                     }
