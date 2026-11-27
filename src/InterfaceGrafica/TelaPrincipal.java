@@ -8,6 +8,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.*;
 
+/**
+ * Tela inicial e ponto de entrada visual da aplicação Autobots.
+ * Permite realizar login tanto como {@code Cliente} (via CNH) quanto como
+ * {@code Gerente} (via e-mail), além de oferecer acesso ao cadastro de novos clientes.
+ */
 public class TelaPrincipal extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final JTextField campoUsuario = new JTextField(20);
@@ -18,6 +23,9 @@ public class TelaPrincipal extends JFrame {
     private JButton botaoCadastro;
     private JPanel botoes;
 
+    /**
+     * Constrói e inicializa a janela principal de autenticação do sistema.
+     */
     public TelaPrincipal() {
         setTitle("Autobots");
         setSize(560, 570);

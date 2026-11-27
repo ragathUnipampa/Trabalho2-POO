@@ -26,6 +26,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JTextField;
 
+/**
+ * Tela de listagem e gerenciamento da frota de veículos da locadora.
+ * Opera em modo de visualização/aluguel para clientes ou em modo de edição
+ * em lote para gerentes, contando com filtros por categoria (todos, carros e motos).
+ */
 public class TelaVeiculos extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final boolean permiteEdicao;
@@ -39,10 +44,24 @@ public class TelaVeiculos extends JFrame {
     private final JLabel estadoLista = new JLabel(" ");
     private JButton botaoSalvar;
 
+    /**
+     * Constrói a tela de veículos com permissão configurável de edição, sem vínculo
+     * com um cliente específico (uso administrativo ou consulta).
+     *
+     * @param anterior      A janela pai utilizada como referência de posicionamento.
+     * @param permiteEdicao {@code true} para habilitar a edição dos dados dos veículos; {@code false} para apenas leitura.
+     */
     public TelaVeiculos(JFrame anterior, boolean permiteEdicao) {
         this(anterior, permiteEdicao, null);
     }
 
+    /**
+     * Constrói a tela de catálogo de veículos para um cliente autenticado,
+     * permitindo iniciar o aluguel diretamente a partir dos cartões disponíveis.
+     *
+     * @param anterior A janela pai utilizada como referência de posicionamento.
+     * @param cliente  O cliente autenticado que está navegando no catálogo.
+     */
     public TelaVeiculos(JFrame anterior, model.Cliente cliente) {
         this(anterior, false, cliente);
     }

@@ -18,9 +18,19 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Painel administrativo destinado aos gerentes da locadora.
+ * Permite consultar os clientes cadastrados, visualizar e editar a frota de veículos,
+ * além de registrar novos veículos no sistema.
+ */
 public class TelaGerente extends JFrame {
     private final SistemaController controller = new SistemaController();
 
+    /**
+     * Constrói e exibe a janela do painel de gestão para o gerente autenticado.
+     *
+     * @param gerente O objeto {@link model.Gerente} correspondente ao usuário logado.
+     */
     public TelaGerente(model.Gerente gerente) {
         setTitle("Autobots");
         setSize(850, 500);
@@ -29,6 +39,7 @@ public class TelaGerente extends JFrame {
         setLocationRelativeTo(null);
         construirTela(gerente);
     }
+
     private void construirTela(model.Gerente gerente) {
         JPanel conteudo = new JPanel(new BorderLayout(0, 18));
         conteudo.setOpaque(false);
@@ -61,6 +72,7 @@ public class TelaGerente extends JFrame {
                 "Painel de gestao.",
                 conteudo));
     }
+
     private void mostrarClientes(JButton botaoClientes) {
         UiSupport.executarEmSegundoPlano(
                 botaoClientes,

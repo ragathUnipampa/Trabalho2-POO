@@ -26,6 +26,10 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.JTableHeader;
 
+/**
+ * Classe utilitária responsável pela identidade visual, paleta de cores,
+ * fábrica de componentes estilizados e execução assíncrona de tarefas na interface Swing.
+ */
 public final class UiSupport {
     static final Color FUNDO = new Color(244, 247, 255);
     static final Color SUPERFICIE = Color.WHITE;
@@ -39,6 +43,12 @@ public final class UiSupport {
     private UiSupport() {
     }
 
+    /**
+     * Inicializa o tema visual FlatLaf Light e configura as propriedades globais
+     * de fontes, cores e arredondamento de componentes no {@link UIManager}.
+     *
+     * @throws IllegalStateException Se o FlatLaf falhar ao configurar o tema claro.
+     */
     public static void aplicarTema() {
         if (!FlatLightLaf.setup()) {
             throw new IllegalStateException("O FlatLaf nao conseguiu inicializar o tema claro.");
@@ -59,6 +69,14 @@ public final class UiSupport {
         UIManager.put("ComboBox.background", SUPERFICIE);
     }
 
+    /**
+     * Cria a estrutura padrão de página contendo margens, cabeçalho institucional
+     * e área central de conteúdo.
+     *
+     * @param titulo   O título principal exibido no cabeçalho da página.
+     * @param conteudo O componente central a ser exibido na página, ou {@code null}.
+     * @return Um {@link JPanel} configurado como contêiner principal da tela.
+     */
     static JPanel criarPagina(String titulo, Component conteudo) {
         JPanel pagina = new JPanel(new BorderLayout(0, 22));
         pagina.setBackground(FUNDO);
@@ -91,6 +109,12 @@ public final class UiSupport {
         return cabecalho;
     }
 
+    /**
+     * Cria um contêiner tipo cartão com fundo branco, borda sutil e espaçamento interno.
+     *
+     * @param layout O gerenciador de layout a ser aplicado ao cartão.
+     * @return O {@link JPanel} estilizado como cartão.
+     */
     static JPanel criarCartao(LayoutManager layout) {
         JPanel cartao = new JPanel(layout);
         cartao.setBackground(SUPERFICIE);
@@ -100,11 +124,25 @@ public final class UiSupport {
         return cartao;
     }
 
+    /**
+     * Cria um agrupamento vertical contendo um rótulo textual e um componente de entrada estilizado.
+     *
+     * @param rotulo O texto descritivo exibido acima do campo.
+     * @param campo  O componente de entrada de dados.
+     * @return Um {@link JPanel} agrupando o rótulo e o campo.
+     */
     static JPanel criarCampo(String rotulo, JComponent campo) {
         JLabel label = new JLabel(rotulo);
         return criarCampo(label, campo);
     }
 
+    /**
+     * Cria um agrupamento vertical associando um {@link JLabel} existente a um componente de entrada estilizado.
+     *
+     * @param label O rótulo já instanciado a ser exibido acima do campo.
+     * @param campo O componente de entrada de dados.
+     * @return Um {@link JPanel} agrupando o rótulo e o campo.
+     */
     static JPanel criarCampo(JLabel label, JComponent campo) {
         JPanel grupo = new JPanel(new BorderLayout(0, 7));
         grupo.setOpaque(false);
@@ -117,6 +155,11 @@ public final class UiSupport {
         return grupo;
     }
 
+    /**
+     * Aplica fonte, cores, bordas e dimensões padrão a um componente de formulário.
+     *
+     * @param campo O {@link JComponent} a ser estilizado.
+     */
     static void estilizarCampo(JComponent campo) {
         campo.setFont(new Font("SansSerif", Font.PLAIN, 14));
         campo.setForeground(TEXTO);
@@ -130,6 +173,12 @@ public final class UiSupport {
         }
     }
 
+    /**
+     * Cria um botão de ação principal com fundo na cor primária e texto em branco.
+     *
+     * @param texto O rótulo do botão.
+     * @return O {@link JButton} primário estilizado.
+     */
     static JButton botaoPrimario(String texto) {
         JButton botao = criarBotao(texto);
         botao.setBackground(PRIMARIA);
@@ -138,6 +187,12 @@ public final class UiSupport {
         return botao;
     }
 
+    /**
+     * Cria um botão de ação secundária com fundo branco, borda definida e texto escuro.
+     *
+     * @param texto O rótulo do botão.
+     * @return O {@link JButton} secundário estilizado.
+     */
     static JButton botaoSecundario(String texto) {
         JButton botao = criarBotao(texto);
         botao.setBackground(SUPERFICIE);
@@ -148,6 +203,19 @@ public final class UiSupport {
         return botao;
     }
 
+    /**
+     * Executa uma tarefa em segundo plano utilizando {@link javax.swing.SwingWorker},
+     * desabilitando temporariamente o botão acionado e os controles informados,
+     * além de alterar o texto do botão durante o processamento.
+     *
+     * @param <T>                  O tipo do resultado retornado pela tarefa.
+     * @param botao                O botão que disparou a ação.
+     * @param textoDuranteExecucao O texto exibido no botão enquanto a tarefa está em andamento.
+     * @param tarefa               A operação a ser executada fora da thread de interface (EDT).
+     * @param aoConcluir           O callback executado na EDT quando a tarefa termina com sucesso.
+     * @param aoFalhar             O callback executado na EDT caso ocorra uma exceção.
+     * @param controles            Componentes adicionais que devem ficar desabilitados durante a execução.
+     */
     static <T> void executarEmSegundoPlano(
             JButton botao,
             String textoDuranteExecucao,
@@ -162,6 +230,16 @@ public final class UiSupport {
                 tarefa, aoConcluir, aoFalhar, botao, textoDuranteExecucao, controles);
     }
 
+    /**
+     * Executa uma tarefa em segundo plano sem vínculo com um botão específico,
+     * desabilitando temporariamente os controles fornecidos durante o processamento.
+     *
+     * @param <T>        O tipo do resultado retornado pela tarefa.
+     * @param tarefa     A operação a ser executada fora da thread de interface (EDT).
+     * @param aoConcluir O callback executado na EDT quando a tarefa termina com sucesso.
+     * @param aoFalhar   O callback executado na EDT caso ocorra uma exceção.
+     * @param controles  Componentes que devem ficar desabilitados durante a execução.
+     */
     static <T> void executarEmSegundoPlano(
             Callable<T> tarefa,
             Consumer<T> aoConcluir,
@@ -223,6 +301,11 @@ public final class UiSupport {
         return botao;
     }
 
+    /**
+     * Aplica estilos de fonte, altura de linha, cores de seleção e cabeçalho a uma {@link JTable}.
+     *
+     * @param tabela A tabela a ser estilizada.
+     */
     static void estilizarTabela(JTable tabela) {
         tabela.setFont(new Font("SansSerif", Font.PLAIN, 13));
         tabela.setForeground(TEXTO);
@@ -241,6 +324,12 @@ public final class UiSupport {
         cabecalho.setPreferredSize(new Dimension(cabecalho.getPreferredSize().width, 36));
     }
 
+    /**
+     * Estiliza uma tabela e a envolve em um painel de rolagem ({@link JScrollPane}) com borda padrão.
+     *
+     * @param tabela A tabela a ser inserida no painel de rolagem.
+     * @return O {@link JScrollPane} contendo a tabela estilizada.
+     */
     static JScrollPane criarScrollTabela(JTable tabela) {
         estilizarTabela(tabela);
         JScrollPane scroll = new JScrollPane(tabela);
@@ -249,10 +338,24 @@ public final class UiSupport {
         return scroll;
     }
 
+    /**
+     * Exibe uma caixa de diálogo de aviso modal ao usuário.
+     *
+     * @param parent   A janela pai sobre a qual o diálogo será centralizado.
+     * @param mensagem A mensagem de aviso a ser exibida.
+     */
     static void aviso(Window parent, String mensagem) {
         JOptionPane.showMessageDialog(parent, mensagem, "Atencao", JOptionPane.WARNING_MESSAGE);
     }
 
+    /**
+     * Exibe uma caixa de diálogo de erro modal contendo uma descrição amigável
+     * acompanhada da mensagem técnica da exceção ocorrida.
+     *
+     * @param parent   A janela pai sobre a qual o diálogo será centralizado.
+     * @param mensagem A mensagem principal explicando a falha.
+     * @param erro     A exceção capturada que originou o erro.
+     */
     static void erro(Window parent, String mensagem, Throwable erro) {
         String detalhe = erro.getMessage() == null ? "Erro desconhecido." : erro.getMessage();
         JOptionPane.showMessageDialog(parent, mensagem + "\n" + detalhe, "Erro", JOptionPane.ERROR_MESSAGE);

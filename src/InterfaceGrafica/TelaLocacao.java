@@ -37,6 +37,14 @@ public class TelaLocacao extends JFrame {
         this(anterior, cliente, null);
     }
 
+    /**
+     * Constrói o formulário de nova locação com possibilidade de pré-preencher
+     * e bloquear a placa de um veículo selecionado previamente.
+     *
+     * @param anterior     A janela pai que invocou esta tela, usada como referência de posicionamento.
+     * @param cliente      O cliente autenticado que está realizando a locação.
+     * @param placaVeiculo A placa do veículo pré-selecionado, ou {@code null} para digitação livre.
+     */
     public TelaLocacao(JFrame anterior, model.Cliente cliente, String placaVeiculo) {
         this.cliente = cliente;
         setTitle("Autobots");

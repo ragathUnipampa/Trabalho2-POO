@@ -12,10 +12,18 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+/**
+ * Tela de autenticação dedicada aos gerentes da locadora.
+ * Coleta e-mail e senha e valida as credenciais junto ao controlador do sistema.
+ */
 public class TelaLoginGerente extends JFrame {
     private final SistemaController controller = new SistemaController();
     private final JTextField email = new JTextField(); private final JPasswordField senha = new JPasswordField();
     private JButton botaoEntrar;
+
+    /**
+     * Constrói e exibe o formulário de login exclusivo para gerentes.
+     */
     public TelaLoginGerente() {
         setTitle("Autobots");
         setSize(540, 430);

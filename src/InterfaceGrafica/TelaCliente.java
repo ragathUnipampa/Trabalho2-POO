@@ -9,8 +9,19 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * Tela inicial exibida ao cliente após a autenticação no sistema.
+ * Apresenta uma mensagem de boas-vindas e disponibiliza atalhos para visualizar
+ * os veículos disponíveis, iniciar uma nova locação ou encerrar a sessão.
+ */
 public class TelaCliente extends JFrame {
     private final model.Cliente cliente;
+
+    /**
+     * Constrói e inicializa a janela principal do cliente.
+     *
+     * @param cliente O cliente autenticado que utilizará os recursos da tela.
+     */
     public TelaCliente(model.Cliente cliente) {
         this.cliente = cliente;
         setTitle("Autobots");
@@ -20,6 +31,11 @@ public class TelaCliente extends JFrame {
         setLocationRelativeTo(null);
         construirTela();
     }
+
+    /**
+     * Monta e organiza os componentes visuais da tela, incluindo o cartão
+     * de saudação e os botões de navegação do menu principal do cliente.
+     */
     private void construirTela() {
         JPanel conteudo = new JPanel(new BorderLayout(0, 18));
         conteudo.setOpaque(false);
